@@ -15,6 +15,7 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import (
+    BATHING_CONDITION_OPTIONS,
     CONF_NAME,
     CONF_SLUG,
     DEFAULT_WMO_CONDITION,
@@ -293,7 +294,14 @@ class AirTemperatureSensor(_BeachWeatherSensorBase):
 
 
 class WeatherConditionSensor(_BeachWeatherSensorBase):
-    """Human-readable WMO weather condition, derived from the raw weather_code."""
+    """WMO weather condition, derived from the raw weather_code.
+
+    native_value is a stable, language-independent key (e.g. "clear_sky");
+    the displayed label is translated per entity.sensor.weather_condition.state.<key>.
+    """
+
+    _attr_device_class = SensorDeviceClass.ENUM
+    _attr_options = [key for key, _icon in WMO_CONDITIONS.values()] + [DEFAULT_WMO_CONDITION[0]]
 
     def __init__(self, coordinator: ForecastCoordinator, entry: ConfigEntry) -> None:
         super().__init__(coordinator, entry, KEY_WEATHER_CONDITION)
@@ -348,10 +356,16 @@ class BathingConditionsSensor(SensorEntity):
 
     Listens to both the Marine and Forecast coordinators manually (instead of
     extending CoordinatorEntity, which only supports a single coordinator).
+
+    native_value is a stable, language-independent key (e.g. "very_good");
+    the displayed label (with emoji) is translated per
+    entity.sensor.bathing_conditions.state.<key>.
     """
 
     _attr_has_entity_name = True
     _attr_should_poll = False
+    _attr_device_class = SensorDeviceClass.ENUM
+    _attr_options = BATHING_CONDITION_OPTIONS
 
     def __init__(
         self,
@@ -391,18 +405,18 @@ class BathingConditionsSensor(SensorEntity):
         wave_period = self._value("wave_period")
 
         if wave_height is None or water_temp is None:
-            return "⚪ No data"
+            return "no_data"
         if water_temp < 18:
-            return "❄️ Too cold"
+            return "too_cold"
         if wave_height < 1.0:
             if water_temp > 22 and wave_period is not None and wave_period > 8:
-                return "🔥 Perfect"
+                return "perfect"
             if water_temp > 20:
-                return "🟢 Very good"
-            return "🟢 Good"
+                return "very_good"
+            return "good"
         if wave_height < 1.5:
-            return "🟡 Moderate"
-        return "🔴 Poor"
+            return "moderate"
+        return "poor"
 
     @property
     def icon(self) -> str:

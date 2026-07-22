@@ -41,9 +41,53 @@
       "wind_gusts": { "name": "Windböen" },
       "wind_direction": { "name": "Windrichtung" },
       "air_temperature": { "name": "Lufttemperatur" },
-      "weather_condition": { "name": "Wetterlage" },
+      "weather_condition": {
+        "name": "Wetterlage",
+        "state": {
+          "clear_sky": "Klarer Himmel",
+          "mainly_clear": "Überwiegend klar",
+          "partly_cloudy": "Teilweise bewölkt",
+          "overcast": "Bedeckt",
+          "fog": "Nebel",
+          "depositing_rime_fog": "Reifnebel",
+          "light_drizzle": "Leichter Nieselregen",
+          "moderate_drizzle": "Mäßiger Nieselregen",
+          "dense_drizzle": "Starker Nieselregen",
+          "light_freezing_drizzle": "Leichter gefrierender Nieselregen",
+          "dense_freezing_drizzle": "Starker gefrierender Nieselregen",
+          "slight_rain": "Leichter Regen",
+          "moderate_rain": "Mäßiger Regen",
+          "heavy_rain": "Starker Regen",
+          "light_freezing_rain": "Leichter gefrierender Regen",
+          "heavy_freezing_rain": "Starker gefrierender Regen",
+          "slight_snow_fall": "Leichter Schneefall",
+          "moderate_snow_fall": "Mäßiger Schneefall",
+          "heavy_snow_fall": "Starker Schneefall",
+          "snow_grains": "Schneegriesel",
+          "slight_rain_showers": "Leichte Regenschauer",
+          "moderate_rain_showers": "Mäßige Regenschauer",
+          "violent_rain_showers": "Heftige Regenschauer",
+          "slight_snow_showers": "Leichte Schneeschauer",
+          "heavy_snow_showers": "Starke Schneeschauer",
+          "thunderstorm": "Gewitter",
+          "thunderstorm_slight_hail": "Gewitter mit leichtem Hagel",
+          "thunderstorm_heavy_hail": "Gewitter mit starkem Hagel",
+          "unknown": "Unbekannt"
+        }
+      },
       "timestamp_wind": { "name": "Zeitstempel Wind" },
-      "bathing_conditions": { "name": "Badebedingungen" },
+      "bathing_conditions": {
+        "name": "Badebedingungen",
+        "state": {
+          "too_cold": "❄️ Zu kalt",
+          "perfect": "🔥 Perfekt",
+          "very_good": "🟢 Sehr gut",
+          "good": "🟢 Gut",
+          "moderate": "🟡 Mittel",
+          "poor": "🔴 Schlecht",
+          "no_data": "⚪ Keine Daten"
+        }
+      },
       "location": { "name": "Standort" }
     }
   }

@@ -46,35 +46,50 @@ KEY_TIMESTAMP_WIND = "timestamp_wind"
 KEY_BATHING_CONDITIONS = "bathing_conditions"
 KEY_LOCATION = "location"
 
-# WMO weather interpretation codes (used by the Weather Condition sensor)
+# WMO weather interpretation codes (used by the Weather Condition sensor).
+# Maps each code to a (translation-key, icon) pair — the key is a stable,
+# language-independent enum value; the displayed label is looked up via
+# entity.sensor.weather_condition.state.<key> in strings.json/translations.
 WMO_CONDITIONS: dict[int, tuple[str, str]] = {
-    0: ("Clear sky", "mdi:weather-sunny"),
-    1: ("Mainly clear", "mdi:weather-sunny"),
-    2: ("Partly cloudy", "mdi:weather-partly-cloudy"),
-    3: ("Overcast", "mdi:weather-cloudy"),
-    45: ("Fog", "mdi:weather-fog"),
-    48: ("Depositing rime fog", "mdi:weather-fog"),
-    51: ("Light drizzle", "mdi:weather-partly-rainy"),
-    53: ("Moderate drizzle", "mdi:weather-rainy"),
-    55: ("Dense drizzle", "mdi:weather-rainy"),
-    56: ("Light freezing drizzle", "mdi:weather-snowy-rainy"),
-    57: ("Dense freezing drizzle", "mdi:weather-snowy-rainy"),
-    61: ("Slight rain", "mdi:weather-rainy"),
-    63: ("Moderate rain", "mdi:weather-pouring"),
-    65: ("Heavy rain", "mdi:weather-pouring"),
-    66: ("Light freezing rain", "mdi:weather-snowy-rainy"),
-    67: ("Heavy freezing rain", "mdi:weather-snowy-rainy"),
-    71: ("Slight snow fall", "mdi:weather-snowy"),
-    73: ("Moderate snow fall", "mdi:weather-snowy"),
-    75: ("Heavy snow fall", "mdi:weather-snowy-heavy"),
-    77: ("Snow grains", "mdi:weather-snowy"),
-    80: ("Slight rain showers", "mdi:weather-partly-rainy"),
-    81: ("Moderate rain showers", "mdi:weather-pouring"),
-    82: ("Violent rain showers", "mdi:weather-pouring"),
-    85: ("Slight snow showers", "mdi:weather-snowy"),
-    86: ("Heavy snow showers", "mdi:weather-snowy-heavy"),
-    95: ("Thunderstorm", "mdi:weather-lightning"),
-    96: ("Thunderstorm with slight hail", "mdi:weather-lightning-rainy"),
-    99: ("Thunderstorm with heavy hail", "mdi:weather-lightning-rainy"),
+    0: ("clear_sky", "mdi:weather-sunny"),
+    1: ("mainly_clear", "mdi:weather-sunny"),
+    2: ("partly_cloudy", "mdi:weather-partly-cloudy"),
+    3: ("overcast", "mdi:weather-cloudy"),
+    45: ("fog", "mdi:weather-fog"),
+    48: ("depositing_rime_fog", "mdi:weather-fog"),
+    51: ("light_drizzle", "mdi:weather-partly-rainy"),
+    53: ("moderate_drizzle", "mdi:weather-rainy"),
+    55: ("dense_drizzle", "mdi:weather-rainy"),
+    56: ("light_freezing_drizzle", "mdi:weather-snowy-rainy"),
+    57: ("dense_freezing_drizzle", "mdi:weather-snowy-rainy"),
+    61: ("slight_rain", "mdi:weather-rainy"),
+    63: ("moderate_rain", "mdi:weather-pouring"),
+    65: ("heavy_rain", "mdi:weather-pouring"),
+    66: ("light_freezing_rain", "mdi:weather-snowy-rainy"),
+    67: ("heavy_freezing_rain", "mdi:weather-snowy-rainy"),
+    71: ("slight_snow_fall", "mdi:weather-snowy"),
+    73: ("moderate_snow_fall", "mdi:weather-snowy"),
+    75: ("heavy_snow_fall", "mdi:weather-snowy-heavy"),
+    77: ("snow_grains", "mdi:weather-snowy"),
+    80: ("slight_rain_showers", "mdi:weather-partly-rainy"),
+    81: ("moderate_rain_showers", "mdi:weather-pouring"),
+    82: ("violent_rain_showers", "mdi:weather-pouring"),
+    85: ("slight_snow_showers", "mdi:weather-snowy"),
+    86: ("heavy_snow_showers", "mdi:weather-snowy-heavy"),
+    95: ("thunderstorm", "mdi:weather-lightning"),
+    96: ("thunderstorm_slight_hail", "mdi:weather-lightning-rainy"),
+    99: ("thunderstorm_heavy_hail", "mdi:weather-lightning-rainy"),
 }
-DEFAULT_WMO_CONDITION = ("Unknown", "mdi:help-circle")
+DEFAULT_WMO_CONDITION = ("unknown", "mdi:help-circle")
+
+# Bathing Conditions enum values — the displayed label (including emoji) is
+# looked up via entity.sensor.bathing_conditions.state.<key>.
+BATHING_CONDITION_OPTIONS = [
+    "too_cold",
+    "perfect",
+    "very_good",
+    "good",
+    "moderate",
+    "poor",
+    "no_data",
+]
