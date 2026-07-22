@@ -1,0 +1,33 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "New Location",
+        "description": "Add a location for beach/water conditions.",
+        "data": {
+          "name": "Name",
+          "location": "Coordinates (enter manually or pick on the map)",
+          "scan_interval": "Poll interval (seconds, min. 300)"
+        }
+      }
+    },
+    "error": {
+      "invalid_name": "Please enter a name."
+    },
+    "abort": {
+      "already_configured": "This location is already configured."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Options",
+        "description": "Adjust coordinates or poll interval.",
+        "data": {
+          "location": "Coordinates",
+          "scan_interval": "Poll interval (seconds, min. 300)"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Neuer Standort",
+        "description": "Standort für Strandbedingungen hinzufügen.",
+        "data": {
+          "name": "Name",
+          "location": "Koordinaten (manuell oder auf der Karte wählen)",
+          "scan_interval": "Abfrageintervall (Sekunden, min. 300)"
+        }
+      }
+    },
+    "error": {
+      "invalid_name": "Bitte einen Namen eingeben."
+    },
+    "abort": {
+      "already_configured": "Dieser Standort ist bereits konfiguriert."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Optionen",
+        "description": "Koordinaten oder Abfrageintervall anpassen.",
+        "data": {
+          "location": "Koordinaten",
+          "scan_interval": "Abfrageintervall (Sekunden, min. 300)"
+        }
+      }
+    }
+  }
+}

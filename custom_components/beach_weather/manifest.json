@@ -1,0 +1,12 @@
+{
+  "domain": "beach_weather",
+  "name": "Beach Weather",
+  "codeowners": ["@LuckyTriple7"],
+  "config_flow": true,
+  "dependencies": [],
+  "documentation": "https://github.com/LuckyTriple7/ha-beach-weather",
+  "iot_class": "cloud_polling",
+  "issue_tracker": "https://github.com/LuckyTriple7/ha-beach-weather/issues",
+  "requirements": [],
+  "version": "0.1.0"
+}
