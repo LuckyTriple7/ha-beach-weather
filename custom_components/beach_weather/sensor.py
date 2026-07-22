@@ -17,16 +17,22 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from .const import (
     CONF_NAME,
     CONF_SLUG,
+    DEFAULT_WMO_CONDITION,
     DOMAIN,
-    KEY_BADEBEDINGUNGEN,
-    KEY_STANDORT,
-    KEY_WASSERTEMPERATUR,
-    KEY_WELLENHOEHE,
-    KEY_WINDBOEEN,
-    KEY_WINDGESCHWINDIGKEIT,
-    KEY_WINDRICHTUNG,
-    KEY_ZEITSTEMPEL_MARINE,
-    KEY_ZEITSTEMPEL_WIND,
+    KEY_AIR_TEMPERATURE,
+    KEY_BATHING_CONDITIONS,
+    KEY_LOCATION,
+    KEY_SWELL_DIRECTION,
+    KEY_SWELL_HEIGHT,
+    KEY_TIMESTAMP_MARINE,
+    KEY_TIMESTAMP_WIND,
+    KEY_WATER_TEMPERATURE,
+    KEY_WAVE_HEIGHT,
+    KEY_WEATHER_CONDITION,
+    KEY_WIND_DIRECTION,
+    KEY_WIND_GUSTS,
+    KEY_WIND_SPEED,
+    WMO_CONDITIONS,
 )
 from .coordinator import ForecastCoordinator, MarineCoordinator
 
@@ -42,15 +48,19 @@ async def async_setup_entry(
 
     async_add_entities(
         [
-            WassertemperaturSensor(marine, entry),
-            WellenhoeheSensor(marine, entry),
-            ZeitstempelMarineSensor(marine, entry),
-            WindgeschwindigkeitSensor(forecast, entry),
-            WindboeenSensor(forecast, entry),
-            WindrichtungSensor(forecast, entry),
-            ZeitstempelWindSensor(forecast, entry),
-            BadebedingungenSensor(marine, forecast, entry),
-            StandortSensor(entry),
+            WaterTemperatureSensor(marine, entry),
+            WaveHeightSensor(marine, entry),
+            SwellHeightSensor(marine, entry),
+            SwellDirectionSensor(marine, entry),
+            TimestampMarineSensor(marine, entry),
+            WindSpeedSensor(forecast, entry),
+            WindGustsSensor(forecast, entry),
+            WindDirectionSensor(forecast, entry),
+            AirTemperatureSensor(forecast, entry),
+            WeatherConditionSensor(forecast, entry),
+            TimestampWindSensor(forecast, entry),
+            BathingConditionsSensor(marine, forecast, entry),
+            LocationSensor(entry),
         ]
     )
 
@@ -90,13 +100,13 @@ class _BeachWeatherSensorBase(CoordinatorEntity, SensorEntity):
         return self.coordinator.last_update_success and self.coordinator.data is not None
 
 
-class WassertemperaturSensor(_BeachWeatherSensorBase):
+class WaterTemperatureSensor(_BeachWeatherSensorBase):
     _attr_device_class = SensorDeviceClass.TEMPERATURE
     _attr_state_class = SensorStateClass.MEASUREMENT
     _attr_native_unit_of_measurement = UnitOfTemperature.CELSIUS
 
     def __init__(self, coordinator: MarineCoordinator, entry: ConfigEntry) -> None:
-        super().__init__(coordinator, entry, KEY_WASSERTEMPERATUR, "Wassertemperatur")
+        super().__init__(coordinator, entry, KEY_WATER_TEMPERATURE, "Water Temperature")
 
     @property
     def available(self) -> bool:
@@ -115,12 +125,12 @@ class WassertemperaturSensor(_BeachWeatherSensorBase):
         return {"time": self.coordinator.data.get("time")}
 
 
-class WellenhoeheSensor(_BeachWeatherSensorBase):
+class WaveHeightSensor(_BeachWeatherSensorBase):
     _attr_state_class = SensorStateClass.MEASUREMENT
     _attr_native_unit_of_measurement = UnitOfLength.METERS
 
     def __init__(self, coordinator: MarineCoordinator, entry: ConfigEntry) -> None:
-        super().__init__(coordinator, entry, KEY_WELLENHOEHE, "Wellenhöhe")
+        super().__init__(coordinator, entry, KEY_WAVE_HEIGHT, "Wave Height")
 
     @property
     def available(self) -> bool:
@@ -142,11 +152,49 @@ class WellenhoeheSensor(_BeachWeatherSensorBase):
         }
 
 
-class ZeitstempelMarineSensor(_BeachWeatherSensorBase):
+class SwellHeightSensor(_BeachWeatherSensorBase):
+    """Swell wave height — surf-relevant, distinct from local wind chop."""
+
+    _attr_state_class = SensorStateClass.MEASUREMENT
+    _attr_native_unit_of_measurement = UnitOfLength.METERS
+
+    def __init__(self, coordinator: MarineCoordinator, entry: ConfigEntry) -> None:
+        super().__init__(coordinator, entry, KEY_SWELL_HEIGHT, "Swell Height")
+
+    @property
+    def available(self) -> bool:
+        return super().available and self.coordinator.data.get("swell_wave_height") is not None
+
+    @property
+    def native_value(self) -> float | None:
+        if not self.available:
+            return None
+        return round(self.coordinator.data["swell_wave_height"], 2)
+
+
+class SwellDirectionSensor(_BeachWeatherSensorBase):
+    _attr_state_class = SensorStateClass.MEASUREMENT
+    _attr_native_unit_of_measurement = DEGREE
+
+    def __init__(self, coordinator: MarineCoordinator, entry: ConfigEntry) -> None:
+        super().__init__(coordinator, entry, KEY_SWELL_DIRECTION, "Swell Direction")
+
+    @property
+    def available(self) -> bool:
+        return super().available and self.coordinator.data.get("swell_wave_direction") is not None
+
+    @property
+    def native_value(self) -> int | None:
+        if not self.available:
+            return None
+        return round(self.coordinator.data["swell_wave_direction"])
+
+
+class TimestampMarineSensor(_BeachWeatherSensorBase):
     _attr_device_class = SensorDeviceClass.TIMESTAMP
 
     def __init__(self, coordinator: MarineCoordinator, entry: ConfigEntry) -> None:
-        super().__init__(coordinator, entry, KEY_ZEITSTEMPEL_MARINE, "Zeitstempel")
+        super().__init__(coordinator, entry, KEY_TIMESTAMP_MARINE, "Timestamp")
 
     @property
     def available(self) -> bool:
@@ -159,13 +207,13 @@ class ZeitstempelMarineSensor(_BeachWeatherSensorBase):
         return _parse_open_meteo_time(self.coordinator.data.get("time"))
 
 
-class WindgeschwindigkeitSensor(_BeachWeatherSensorBase):
+class WindSpeedSensor(_BeachWeatherSensorBase):
     _attr_device_class = SensorDeviceClass.WIND_SPEED
     _attr_state_class = SensorStateClass.MEASUREMENT
     _attr_native_unit_of_measurement = UnitOfSpeed.KILOMETERS_PER_HOUR
 
     def __init__(self, coordinator: ForecastCoordinator, entry: ConfigEntry) -> None:
-        super().__init__(coordinator, entry, KEY_WINDGESCHWINDIGKEIT, "Windgeschwindigkeit")
+        super().__init__(coordinator, entry, KEY_WIND_SPEED, "Wind Speed")
 
     @property
     def available(self) -> bool:
@@ -184,13 +232,13 @@ class WindgeschwindigkeitSensor(_BeachWeatherSensorBase):
         return {"time": self.coordinator.data.get("time")}
 
 
-class WindboeenSensor(_BeachWeatherSensorBase):
+class WindGustsSensor(_BeachWeatherSensorBase):
     _attr_device_class = SensorDeviceClass.WIND_SPEED
     _attr_state_class = SensorStateClass.MEASUREMENT
     _attr_native_unit_of_measurement = UnitOfSpeed.KILOMETERS_PER_HOUR
 
     def __init__(self, coordinator: ForecastCoordinator, entry: ConfigEntry) -> None:
-        super().__init__(coordinator, entry, KEY_WINDBOEEN, "Windböen")
+        super().__init__(coordinator, entry, KEY_WIND_GUSTS, "Wind Gusts")
 
     @property
     def available(self) -> bool:
@@ -203,12 +251,12 @@ class WindboeenSensor(_BeachWeatherSensorBase):
         return round(self.coordinator.data["wind_gusts_10m"], 1)
 
 
-class WindrichtungSensor(_BeachWeatherSensorBase):
+class WindDirectionSensor(_BeachWeatherSensorBase):
     _attr_state_class = SensorStateClass.MEASUREMENT
     _attr_native_unit_of_measurement = DEGREE
 
     def __init__(self, coordinator: ForecastCoordinator, entry: ConfigEntry) -> None:
-        super().__init__(coordinator, entry, KEY_WINDRICHTUNG, "Windrichtung")
+        super().__init__(coordinator, entry, KEY_WIND_DIRECTION, "Wind Direction")
 
     @property
     def available(self) -> bool:
@@ -221,11 +269,64 @@ class WindrichtungSensor(_BeachWeatherSensorBase):
         return round(self.coordinator.data["wind_direction_10m"])
 
 
-class ZeitstempelWindSensor(_BeachWeatherSensorBase):
+class AirTemperatureSensor(_BeachWeatherSensorBase):
+    _attr_device_class = SensorDeviceClass.TEMPERATURE
+    _attr_state_class = SensorStateClass.MEASUREMENT
+    _attr_native_unit_of_measurement = UnitOfTemperature.CELSIUS
+
+    def __init__(self, coordinator: ForecastCoordinator, entry: ConfigEntry) -> None:
+        super().__init__(coordinator, entry, KEY_AIR_TEMPERATURE, "Air Temperature")
+
+    @property
+    def available(self) -> bool:
+        return super().available and self.coordinator.data.get("temperature_2m") is not None
+
+    @property
+    def native_value(self) -> float | None:
+        if not self.available:
+            return None
+        return round(self.coordinator.data["temperature_2m"], 1)
+
+
+class WeatherConditionSensor(_BeachWeatherSensorBase):
+    """Human-readable WMO weather condition, derived from the raw weather_code."""
+
+    def __init__(self, coordinator: ForecastCoordinator, entry: ConfigEntry) -> None:
+        super().__init__(coordinator, entry, KEY_WEATHER_CONDITION, "Weather Condition")
+
+    @property
+    def available(self) -> bool:
+        return super().available and self.coordinator.data.get("weather_code") is not None
+
+    @property
+    def _condition(self) -> tuple[str, str]:
+        code = self.coordinator.data.get("weather_code")
+        return WMO_CONDITIONS.get(code, DEFAULT_WMO_CONDITION)
+
+    @property
+    def native_value(self) -> str | None:
+        if not self.available:
+            return None
+        return self._condition[0]
+
+    @property
+    def icon(self) -> str:
+        if not self.available:
+            return "mdi:help-circle"
+        return self._condition[1]
+
+    @property
+    def extra_state_attributes(self) -> dict:
+        if not self.available:
+            return {}
+        return {"code": self.coordinator.data.get("weather_code")}
+
+
+class TimestampWindSensor(_BeachWeatherSensorBase):
     _attr_device_class = SensorDeviceClass.TIMESTAMP
 
     def __init__(self, coordinator: ForecastCoordinator, entry: ConfigEntry) -> None:
-        super().__init__(coordinator, entry, KEY_ZEITSTEMPEL_WIND, "Zeitstempel Wind")
+        super().__init__(coordinator, entry, KEY_TIMESTAMP_WIND, "Wind Timestamp")
 
     @property
     def available(self) -> bool:
@@ -238,7 +339,7 @@ class ZeitstempelWindSensor(_BeachWeatherSensorBase):
         return _parse_open_meteo_time(self.coordinator.data.get("time"))
 
 
-class BadebedingungenSensor(SensorEntity):
+class BathingConditionsSensor(SensorEntity):
     """Purely computed from the Marine coordinator's raw values, no own API call.
 
     Listens to both the Marine and Forecast coordinators manually (instead of
@@ -257,9 +358,9 @@ class BadebedingungenSensor(SensorEntity):
         self._marine = marine
         self._forecast = forecast
         slug = entry.data[CONF_SLUG]
-        self._attr_unique_id = f"{entry.entry_id}_{KEY_BADEBEDINGUNGEN}"
-        self._attr_name = "Badebedingungen"
-        self.entity_id = f"sensor.{KEY_BADEBEDINGUNGEN}_{slug}"
+        self._attr_unique_id = f"{entry.entry_id}_{KEY_BATHING_CONDITIONS}"
+        self._attr_name = "Bathing Conditions"
+        self.entity_id = f"sensor.{KEY_BATHING_CONDITIONS}_{slug}"
         self._attr_device_info = _device_info(entry)
 
     async def async_added_to_hass(self) -> None:
@@ -277,7 +378,7 @@ class BadebedingungenSensor(SensorEntity):
 
     @property
     def available(self) -> bool:
-        return True  # falls back to "Keine Daten" text state instead of unavailable
+        return True  # falls back to "No data" text state instead of unavailable
 
     @property
     def native_value(self) -> str:
@@ -286,18 +387,18 @@ class BadebedingungenSensor(SensorEntity):
         wave_period = self._value("wave_period")
 
         if wave_height is None or water_temp is None:
-            return "⚪ Keine Daten"
+            return "⚪ No data"
         if water_temp < 18:
-            return "❄️ Zu kalt"
+            return "❄️ Too cold"
         if wave_height < 1.0:
             if water_temp > 22 and wave_period is not None and wave_period > 8:
-                return "🔥 Perfekt"
+                return "🔥 Perfect"
             if water_temp > 20:
-                return "🟢 Sehr gut"
-            return "🟢 Gut"
+                return "🟢 Very good"
+            return "🟢 Good"
         if wave_height < 1.5:
-            return "🟡 Mittel"
-        return "🔴 Schlecht"
+            return "🟡 Moderate"
+        return "🔴 Poor"
 
     @property
     def icon(self) -> str:
@@ -316,13 +417,13 @@ class BadebedingungenSensor(SensorEntity):
         wave_period = self._value("wave_period")
         water_temp = self._value("sea_surface_temperature")
         return {
-            "wellenhoehe": wave_height,
-            "wellenperiode": f"{wave_period:.2f} s" if wave_period is not None else None,
-            "temperatur": f"{water_temp:.1f} °C" if water_temp is not None else None,
+            "wave_height": wave_height,
+            "wave_period": f"{wave_period:.2f} s" if wave_period is not None else None,
+            "temperature": f"{water_temp:.1f} °C" if water_temp is not None else None,
         }
 
 
-class StandortSensor(SensorEntity):
+class LocationSensor(SensorEntity):
     """Static display-name sensor, kept so existing Lovelace picture-elements
     cards that reference it by entity_id keep working after migration."""
 
@@ -332,8 +433,8 @@ class StandortSensor(SensorEntity):
 
     def __init__(self, entry: ConfigEntry) -> None:
         slug = entry.data[CONF_SLUG]
-        self._attr_unique_id = f"{entry.entry_id}_{KEY_STANDORT}"
-        self._attr_name = "Standort"
-        self.entity_id = f"sensor.{KEY_STANDORT}_{slug}"
+        self._attr_unique_id = f"{entry.entry_id}_{KEY_LOCATION}"
+        self._attr_name = "Location"
+        self.entity_id = f"sensor.{KEY_LOCATION}_{slug}"
         self._attr_device_info = _device_info(entry)
         self._attr_native_value = entry.data[CONF_NAME]

@@ -36,14 +36,18 @@ One HA device per location, named after the location. All entity IDs include a s
 
 | Entity | Description |
 |--------|-------------|
-| `sensor.wassertemperatur_platja_de_muro` | Sea surface temperature (°C) |
-| `sensor.wellenhoehe_platja_de_muro` | Wave height (m), with wave period as an attribute |
-| `sensor.zeitstempel_platja_de_muro` | Timestamp of the marine data |
-| `sensor.windgeschwindigkeit_platja_de_muro` | Wind speed (km/h) |
-| `sensor.windboeen_platja_de_muro` | Wind gusts (km/h) |
-| `sensor.windrichtung_platja_de_muro` | Wind direction (°) |
-| `sensor.zeitstempel_wind_platja_de_muro` | Timestamp of the wind data |
-| `sensor.badebedingungen_platja_de_muro` | Computed bathing-conditions text/icon (no own API call) |
-| `sensor.standort_platja_de_muro` | Static display name, kept for compatibility with existing Lovelace cards |
+| `sensor.water_temperature_platja_de_muro` | Sea surface temperature (°C) |
+| `sensor.wave_height_platja_de_muro` | Wave height (m), with wave period as an attribute |
+| `sensor.swell_height_platja_de_muro` | Swell wave height (m) — surf-relevant, separate from local wind chop |
+| `sensor.swell_direction_platja_de_muro` | Swell wave direction (°) |
+| `sensor.timestamp_platja_de_muro` | Timestamp of the marine data |
+| `sensor.wind_speed_platja_de_muro` | Wind speed (km/h) |
+| `sensor.wind_gusts_platja_de_muro` | Wind gusts (km/h) |
+| `sensor.wind_direction_platja_de_muro` | Wind direction (°) |
+| `sensor.air_temperature_platja_de_muro` | Air temperature at 2m (°C) |
+| `sensor.weather_condition_platja_de_muro` | Human-readable weather condition (from WMO weather code), with the raw code as an attribute |
+| `sensor.timestamp_wind_platja_de_muro` | Timestamp of the wind/weather data |
+| `sensor.bathing_conditions_platja_de_muro` | Computed bathing-conditions text/icon (no own API call) |
+| `sensor.location_platja_de_muro` | Static display name, kept for compatibility with existing Lovelace cards |
 
 A sensor becomes `unavailable` when Open-Meteo doesn't return a value for that field, or when the request fails.

@@ -10,6 +10,8 @@ MOCK_MARINE_CURRENT = {
     "sea_surface_temperature": 23.8,
     "wave_height": 0.84,
     "wave_period": 6.3,
+    "swell_wave_height": 0.6,
+    "swell_wave_direction": 210,
 }
 
 MOCK_FORECAST_CURRENT = {
@@ -17,6 +19,8 @@ MOCK_FORECAST_CURRENT = {
     "wind_speed_10m": 23.7,
     "wind_direction_10m": 47,
     "wind_gusts_10m": 49.7,
+    "temperature_2m": 27.4,
+    "weather_code": 1,
 }
 
 
