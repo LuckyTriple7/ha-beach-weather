@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.3.0] - 2026-07-22
+### Added
+- Explicit icons for Wave Height, Swell Height (mdi:waves) and Swell/Wind Direction (mdi:compass-outline) — these had no `device_class` and were falling back to HA's generic default icon
+
+### Changed
+- Entity display names are now translated via `translation_key` (German/English follow the HA UI language) while entity IDs stay fixed in English, e.g. `sensor.water_temperature_platja_de_muro` shows as "Wassertemperatur" in a German UI and "Water Temperature" in English
+
 ## [0.2.0] - 2026-07-22
 ### Added
 - Swell height and swell direction sensors (surf-relevant, separate from wind-driven chop)

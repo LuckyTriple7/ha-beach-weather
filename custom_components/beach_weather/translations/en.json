@@ -29,5 +29,22 @@
         }
       }
     }
+  },
+  "entity": {
+    "sensor": {
+      "water_temperature": { "name": "Water Temperature" },
+      "wave_height": { "name": "Wave Height" },
+      "swell_height": { "name": "Swell Height" },
+      "swell_direction": { "name": "Swell Direction" },
+      "timestamp": { "name": "Timestamp" },
+      "wind_speed": { "name": "Wind Speed" },
+      "wind_gusts": { "name": "Wind Gusts" },
+      "wind_direction": { "name": "Wind Direction" },
+      "air_temperature": { "name": "Air Temperature" },
+      "weather_condition": { "name": "Weather Condition" },
+      "timestamp_wind": { "name": "Wind Timestamp" },
+      "bathing_conditions": { "name": "Bathing Conditions" },
+      "location": { "name": "Location" }
+    }
   }
 }

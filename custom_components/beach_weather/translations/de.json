@@ -29,5 +29,22 @@
         }
       }
     }
+  },
+  "entity": {
+    "sensor": {
+      "water_temperature": { "name": "Wassertemperatur" },
+      "wave_height": { "name": "Wellenhöhe" },
+      "swell_height": { "name": "Dünungshöhe" },
+      "swell_direction": { "name": "Dünungsrichtung" },
+      "timestamp": { "name": "Zeitstempel" },
+      "wind_speed": { "name": "Windgeschwindigkeit" },
+      "wind_gusts": { "name": "Windböen" },
+      "wind_direction": { "name": "Windrichtung" },
+      "air_temperature": { "name": "Lufttemperatur" },
+      "weather_condition": { "name": "Wetterlage" },
+      "timestamp_wind": { "name": "Zeitstempel Wind" },
+      "bathing_conditions": { "name": "Badebedingungen" },
+      "location": { "name": "Standort" }
+    }
   }
 }

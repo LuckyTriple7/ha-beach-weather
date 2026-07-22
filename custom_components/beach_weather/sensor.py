@@ -87,11 +87,11 @@ def _parse_open_meteo_time(raw: str | None) -> datetime | None:
 class _BeachWeatherSensorBase(CoordinatorEntity, SensorEntity):
     _attr_has_entity_name = True
 
-    def __init__(self, coordinator, entry: ConfigEntry, key: str, name: str) -> None:
+    def __init__(self, coordinator, entry: ConfigEntry, key: str) -> None:
         super().__init__(coordinator)
         slug = entry.data[CONF_SLUG]
         self._attr_unique_id = f"{entry.entry_id}_{key}"
-        self._attr_name = name
+        self._attr_translation_key = key
         self.entity_id = f"sensor.{key}_{slug}"
         self._attr_device_info = _device_info(entry)
 
@@ -106,7 +106,7 @@ class WaterTemperatureSensor(_BeachWeatherSensorBase):
     _attr_native_unit_of_measurement = UnitOfTemperature.CELSIUS
 
     def __init__(self, coordinator: MarineCoordinator, entry: ConfigEntry) -> None:
-        super().__init__(coordinator, entry, KEY_WATER_TEMPERATURE, "Water Temperature")
+        super().__init__(coordinator, entry, KEY_WATER_TEMPERATURE)
 
     @property
     def available(self) -> bool:
@@ -126,11 +126,12 @@ class WaterTemperatureSensor(_BeachWeatherSensorBase):
 
 
 class WaveHeightSensor(_BeachWeatherSensorBase):
+    _attr_icon = "mdi:waves"
     _attr_state_class = SensorStateClass.MEASUREMENT
     _attr_native_unit_of_measurement = UnitOfLength.METERS
 
     def __init__(self, coordinator: MarineCoordinator, entry: ConfigEntry) -> None:
-        super().__init__(coordinator, entry, KEY_WAVE_HEIGHT, "Wave Height")
+        super().__init__(coordinator, entry, KEY_WAVE_HEIGHT)
 
     @property
     def available(self) -> bool:
@@ -155,11 +156,12 @@ class WaveHeightSensor(_BeachWeatherSensorBase):
 class SwellHeightSensor(_BeachWeatherSensorBase):
     """Swell wave height — surf-relevant, distinct from local wind chop."""
 
+    _attr_icon = "mdi:waves"
     _attr_state_class = SensorStateClass.MEASUREMENT
     _attr_native_unit_of_measurement = UnitOfLength.METERS
 
     def __init__(self, coordinator: MarineCoordinator, entry: ConfigEntry) -> None:
-        super().__init__(coordinator, entry, KEY_SWELL_HEIGHT, "Swell Height")
+        super().__init__(coordinator, entry, KEY_SWELL_HEIGHT)
 
     @property
     def available(self) -> bool:
@@ -173,11 +175,12 @@ class SwellHeightSensor(_BeachWeatherSensorBase):
 
 
 class SwellDirectionSensor(_BeachWeatherSensorBase):
+    _attr_icon = "mdi:compass-outline"
     _attr_state_class = SensorStateClass.MEASUREMENT
     _attr_native_unit_of_measurement = DEGREE
 
     def __init__(self, coordinator: MarineCoordinator, entry: ConfigEntry) -> None:
-        super().__init__(coordinator, entry, KEY_SWELL_DIRECTION, "Swell Direction")
+        super().__init__(coordinator, entry, KEY_SWELL_DIRECTION)
 
     @property
     def available(self) -> bool:
@@ -194,7 +197,7 @@ class TimestampMarineSensor(_BeachWeatherSensorBase):
     _attr_device_class = SensorDeviceClass.TIMESTAMP
 
     def __init__(self, coordinator: MarineCoordinator, entry: ConfigEntry) -> None:
-        super().__init__(coordinator, entry, KEY_TIMESTAMP_MARINE, "Timestamp")
+        super().__init__(coordinator, entry, KEY_TIMESTAMP_MARINE)
 
     @property
     def available(self) -> bool:
@@ -213,7 +216,7 @@ class WindSpeedSensor(_BeachWeatherSensorBase):
     _attr_native_unit_of_measurement = UnitOfSpeed.KILOMETERS_PER_HOUR
 
     def __init__(self, coordinator: ForecastCoordinator, entry: ConfigEntry) -> None:
-        super().__init__(coordinator, entry, KEY_WIND_SPEED, "Wind Speed")
+        super().__init__(coordinator, entry, KEY_WIND_SPEED)
 
     @property
     def available(self) -> bool:
@@ -238,7 +241,7 @@ class WindGustsSensor(_BeachWeatherSensorBase):
     _attr_native_unit_of_measurement = UnitOfSpeed.KILOMETERS_PER_HOUR
 
     def __init__(self, coordinator: ForecastCoordinator, entry: ConfigEntry) -> None:
-        super().__init__(coordinator, entry, KEY_WIND_GUSTS, "Wind Gusts")
+        super().__init__(coordinator, entry, KEY_WIND_GUSTS)
 
     @property
     def available(self) -> bool:
@@ -252,11 +255,12 @@ class WindGustsSensor(_BeachWeatherSensorBase):
 
 
 class WindDirectionSensor(_BeachWeatherSensorBase):
+    _attr_icon = "mdi:compass-outline"
     _attr_state_class = SensorStateClass.MEASUREMENT
     _attr_native_unit_of_measurement = DEGREE
 
     def __init__(self, coordinator: ForecastCoordinator, entry: ConfigEntry) -> None:
-        super().__init__(coordinator, entry, KEY_WIND_DIRECTION, "Wind Direction")
+        super().__init__(coordinator, entry, KEY_WIND_DIRECTION)
 
     @property
     def available(self) -> bool:
@@ -275,7 +279,7 @@ class AirTemperatureSensor(_BeachWeatherSensorBase):
     _attr_native_unit_of_measurement = UnitOfTemperature.CELSIUS
 
     def __init__(self, coordinator: ForecastCoordinator, entry: ConfigEntry) -> None:
-        super().__init__(coordinator, entry, KEY_AIR_TEMPERATURE, "Air Temperature")
+        super().__init__(coordinator, entry, KEY_AIR_TEMPERATURE)
 
     @property
     def available(self) -> bool:
@@ -292,7 +296,7 @@ class WeatherConditionSensor(_BeachWeatherSensorBase):
     """Human-readable WMO weather condition, derived from the raw weather_code."""
 
     def __init__(self, coordinator: ForecastCoordinator, entry: ConfigEntry) -> None:
-        super().__init__(coordinator, entry, KEY_WEATHER_CONDITION, "Weather Condition")
+        super().__init__(coordinator, entry, KEY_WEATHER_CONDITION)
 
     @property
     def available(self) -> bool:
@@ -326,7 +330,7 @@ class TimestampWindSensor(_BeachWeatherSensorBase):
     _attr_device_class = SensorDeviceClass.TIMESTAMP
 
     def __init__(self, coordinator: ForecastCoordinator, entry: ConfigEntry) -> None:
-        super().__init__(coordinator, entry, KEY_TIMESTAMP_WIND, "Wind Timestamp")
+        super().__init__(coordinator, entry, KEY_TIMESTAMP_WIND)
 
     @property
     def available(self) -> bool:
@@ -359,7 +363,7 @@ class BathingConditionsSensor(SensorEntity):
         self._forecast = forecast
         slug = entry.data[CONF_SLUG]
         self._attr_unique_id = f"{entry.entry_id}_{KEY_BATHING_CONDITIONS}"
-        self._attr_name = "Bathing Conditions"
+        self._attr_translation_key = KEY_BATHING_CONDITIONS
         self.entity_id = f"sensor.{KEY_BATHING_CONDITIONS}_{slug}"
         self._attr_device_info = _device_info(entry)
 
@@ -434,7 +438,7 @@ class LocationSensor(SensorEntity):
     def __init__(self, entry: ConfigEntry) -> None:
         slug = entry.data[CONF_SLUG]
         self._attr_unique_id = f"{entry.entry_id}_{KEY_LOCATION}"
-        self._attr_name = "Location"
+        self._attr_translation_key = KEY_LOCATION
         self.entity_id = f"sensor.{KEY_LOCATION}_{slug}"
         self._attr_device_info = _device_info(entry)
         self._attr_native_value = entry.data[CONF_NAME]
