@@ -49,5 +49,12 @@ One HA device per location, named after the location. All entity IDs include a s
 | `sensor.timestamp_wind_platja_de_muro` | Timestamp of the wind/weather data |
 | `sensor.bathing_conditions_platja_de_muro` | Computed bathing-conditions text/icon (no own API call) |
 | `sensor.location_platja_de_muro` | Static display name, kept for compatibility with existing Lovelace cards |
+| `sensor.last_status_platja_de_muro` | Last raw HTTP status code from the Marine API (diagnostic) |
+| `sensor.last_status_wind_platja_de_muro` | Last raw HTTP status code from the Forecast/Wind API (diagnostic) |
+| `button.update_now_platja_de_muro` | Forces an immediate refresh of both APIs for this location — bypasses the shared rate limiter and any active error backoff |
 
-A sensor becomes `unavailable` when Open-Meteo doesn't return a value for that field, or when the request fails.
+A sensor becomes `unavailable` when Open-Meteo doesn't return a value for that field, or when the request fails. The two "Last Status" sensors are the exception — they stay visible even after a failed update, showing the raw status code (e.g. `403`) so a rate-limit issue is diagnosable without digging through the log.
+
+## Error handling & backoff
+
+If a request fails, the affected sensors go `unavailable` until the next successful update; other locations/APIs are unaffected. On HTTP 403 the coordinator backs off for 30 minutes, on 429 for 15 minutes, on other HTTP errors for 5 minutes, before it even attempts another request — this protects against repeatedly hammering an already-blocking Open-Meteo endpoint. The **Update Now** button ignores this backoff and the shared rate limiter entirely: pressing it always fires an immediate request, since a deliberate manual action should not be silently swallowed by the automatic burst protection.

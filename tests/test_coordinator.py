@@ -99,6 +99,79 @@ class TestOpenMeteoCoordinatorBase:
         with pytest.raises(UpdateFailed):
             await coordinator._async_update_data()
 
+    async def test_last_status_code_set_on_success(self, hass):
+        entry = _make_entry(hass)
+        coordinator = _make_coordinator(hass, entry)
+
+        session = _mock_session()
+        session.get = MagicMock(
+            return_value=_mock_response(200, {"current": {"wave_height": 0.5}})
+        )
+        coordinator._session = session
+
+        await coordinator._async_update_data()
+        assert coordinator.last_status_code == 200
+
+    async def test_last_status_code_set_on_error(self, hass):
+        entry = _make_entry(hass)
+        coordinator = _make_coordinator(hass, entry)
+
+        session = _mock_session()
+        session.get = MagicMock(return_value=_mock_response(403))
+        coordinator._session = session
+
+        with pytest.raises(UpdateFailed):
+            await coordinator._async_update_data()
+        assert coordinator.last_status_code == 403
+
+
+class TestAsyncForceRefresh:
+    async def test_bypasses_active_backoff(self, hass):
+        entry = _make_entry(hass)
+        coordinator = _make_coordinator(hass, entry)
+        loop = asyncio.get_running_loop()
+        coordinator._backoff_until = loop.time() + 100
+
+        session = _mock_session()
+        session.get = MagicMock(
+            return_value=_mock_response(200, {"current": {"wave_height": 0.5}})
+        )
+        coordinator._session = session
+
+        await coordinator.async_force_refresh()
+        session.get.assert_called_once()
+        assert coordinator.data == {"wave_height": 0.5}
+        assert coordinator._backoff_until is None
+
+    async def test_bypasses_rate_limiter_spacing(self, hass):
+        entry = _make_entry(hass)
+        hass.data.setdefault(DOMAIN, {})["rate_limiter"] = OpenMeteoRateLimiter(min_spacing=5.0)
+        coordinator = MarineCoordinator(hass, entry, 900)
+
+        session = _mock_session()
+        session.get = MagicMock(
+            return_value=_mock_response(200, {"current": {"wave_height": 0.5}})
+        )
+        coordinator._session = session
+
+        loop = asyncio.get_running_loop()
+        start = loop.time()
+        await coordinator.async_force_refresh()
+        await coordinator.async_force_refresh()
+        assert loop.time() - start < 1.0
+
+    async def test_error_sets_backoff_and_update_error(self, hass):
+        entry = _make_entry(hass)
+        coordinator = _make_coordinator(hass, entry)
+
+        session = _mock_session()
+        session.get = MagicMock(return_value=_mock_response(403))
+        coordinator._session = session
+
+        await coordinator.async_force_refresh()
+        assert coordinator._backoff_until is not None
+        assert coordinator.last_update_success is False
+
 
 class TestOpenMeteoRateLimiter:
     async def test_enforces_minimum_spacing(self):

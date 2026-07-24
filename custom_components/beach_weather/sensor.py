@@ -8,7 +8,7 @@ from homeassistant.components.sensor import (
     SensorStateClass,
 )
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import DEGREE, UnitOfLength, UnitOfSpeed, UnitOfTemperature
+from homeassistant.const import DEGREE, EntityCategory, UnitOfLength, UnitOfSpeed, UnitOfTemperature
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -22,6 +22,8 @@ from .const import (
     DOMAIN,
     KEY_AIR_TEMPERATURE,
     KEY_BATHING_CONDITIONS,
+    KEY_LAST_STATUS,
+    KEY_LAST_STATUS_WIND,
     KEY_LOCATION,
     KEY_SWELL_DIRECTION,
     KEY_SWELL_HEIGHT,
@@ -62,6 +64,8 @@ async def async_setup_entry(
             TimestampWindSensor(forecast, entry),
             BathingConditionsSensor(marine, forecast, entry),
             LocationSensor(entry),
+            LastStatusMarineSensor(marine, entry),
+            LastStatusWindSensor(forecast, entry),
         ]
     )
 
@@ -456,3 +460,54 @@ class LocationSensor(SensorEntity):
         self.entity_id = f"sensor.{KEY_LOCATION}_{slug}"
         self._attr_device_info = _device_info(entry)
         self._attr_native_value = entry.data[CONF_NAME]
+
+
+class _LastStatusSensorBase(SensorEntity):
+    """Last raw HTTP status code returned by this coordinator's endpoint —
+    stays visible even after a failed update, so a 403/429 is diagnosable
+    straight from the entity instead of digging through the log."""
+
+    _attr_has_entity_name = True
+    _attr_should_poll = False
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
+    _attr_state_class = SensorStateClass.MEASUREMENT
+
+    def __init__(self, coordinator, entry: ConfigEntry, key: str) -> None:
+        self._coordinator = coordinator
+        slug = entry.data[CONF_SLUG]
+        self._attr_unique_id = f"{entry.entry_id}_{key}"
+        self._attr_translation_key = key
+        self.entity_id = f"sensor.{key}_{slug}"
+        self._attr_device_info = _device_info(entry)
+
+    async def async_added_to_hass(self) -> None:
+        self.async_on_remove(self._coordinator.async_add_listener(self._handle_update))
+
+    @callback
+    def _handle_update(self) -> None:
+        self.async_write_ha_state()
+
+    @property
+    def available(self) -> bool:
+        return self._coordinator.last_status_code is not None
+
+    @property
+    def native_value(self) -> int | None:
+        return self._coordinator.last_status_code
+
+    @property
+    def icon(self) -> str:
+        status = self._coordinator.last_status_code
+        if status is None:
+            return "mdi:help-circle"
+        return "mdi:check-circle-outline" if status < 400 else "mdi:alert-circle-outline"
+
+
+class LastStatusMarineSensor(_LastStatusSensorBase):
+    def __init__(self, coordinator: MarineCoordinator, entry: ConfigEntry) -> None:
+        super().__init__(coordinator, entry, KEY_LAST_STATUS)
+
+
+class LastStatusWindSensor(_LastStatusSensorBase):
+    def __init__(self, coordinator: ForecastCoordinator, entry: ConfigEntry) -> None:
+        super().__init__(coordinator, entry, KEY_LAST_STATUS_WIND)

@@ -45,6 +45,9 @@ KEY_WEATHER_CONDITION = "weather_condition"
 KEY_TIMESTAMP_WIND = "timestamp_wind"
 KEY_BATHING_CONDITIONS = "bathing_conditions"
 KEY_LOCATION = "location"
+KEY_UPDATE_NOW = "update_now"
+KEY_LAST_STATUS = "last_status"
+KEY_LAST_STATUS_WIND = "last_status_wind"
 
 # WMO weather interpretation codes (used by the Weather Condition sensor).
 # Maps each code to a (translation-key, icon) pair — the key is a stable,

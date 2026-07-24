@@ -88,7 +88,12 @@
           "no_data": "⚪ No data"
         }
       },
-      "location": { "name": "Location" }
+      "location": { "name": "Location" },
+      "last_status": { "name": "Marine API Status" },
+      "last_status_wind": { "name": "Weather API Status" }
+    },
+    "button": {
+      "update_now": { "name": "Update Now" }
     }
   }
 }

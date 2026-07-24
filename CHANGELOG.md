@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.5.0] - 2026-07-24
+### Added
+- "Update Now" button per location, forces an immediate refresh of both coordinators — bypasses the shared rate limiter and any active error backoff (an explicit manual action always wins over the automatic burst protection)
+- Two diagnostic "Last Status" sensors per location (Marine API / Forecast API), showing the last raw HTTP status code returned by that endpoint. Unlike the other sensors, they stay visible after a failed update so a 403/429 is diagnosable without checking the log
+
 ## [0.4.0] - 2026-07-22
 ### Changed
 - Bathing Conditions and Weather Condition are now `enum` sensors: the raw state is a stable, language-independent key (e.g. `very_good`, `clear_sky`), and the displayed label (including emoji) is translated per HA UI language via `translation_key` state translations. Automations matching on state are now unaffected by UI language; previously the raw state itself was hardcoded English text.
