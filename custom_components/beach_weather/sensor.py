@@ -8,9 +8,17 @@ from homeassistant.components.sensor import (
     SensorStateClass,
 )
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import DEGREE, EntityCategory, UnitOfLength, UnitOfSpeed, UnitOfTemperature
+from homeassistant.const import (
+    DEGREE,
+    EntityCategory,
+    UnitOfLength,
+    UnitOfSpeed,
+    UnitOfTemperature,
+    UnitOfTime,
+)
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.device_registry import DeviceInfo
+from homeassistant.helpers.dispatcher import async_dispatcher_connect
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
@@ -18,23 +26,32 @@ from .const import (
     BATHING_CONDITION_OPTIONS,
     CONF_NAME,
     CONF_SLUG,
+    DEFAULT_THRESHOLDS,
     DEFAULT_WMO_CONDITION,
     DOMAIN,
     KEY_AIR_TEMPERATURE,
     KEY_BATHING_CONDITIONS,
+    KEY_CALM_WAVE_MAX,
     KEY_LAST_STATUS,
     KEY_LAST_STATUS_WIND,
     KEY_LOCATION,
+    KEY_MODERATE_WAVE_MAX,
+    KEY_PERFECT_PERIOD_MIN,
+    KEY_PERFECT_TEMP_MIN,
     KEY_SWELL_DIRECTION,
     KEY_SWELL_HEIGHT,
     KEY_TIMESTAMP_MARINE,
     KEY_TIMESTAMP_WIND,
+    KEY_TOO_COLD_MAX,
+    KEY_VERY_GOOD_TEMP_MIN,
     KEY_WATER_TEMPERATURE,
     KEY_WAVE_HEIGHT,
+    KEY_WAVE_PERIOD,
     KEY_WEATHER_CONDITION,
     KEY_WIND_DIRECTION,
     KEY_WIND_GUSTS,
     KEY_WIND_SPEED,
+    SIGNAL_THRESHOLDS_UPDATED,
     WMO_CONDITIONS,
 )
 from .coordinator import ForecastCoordinator, MarineCoordinator
@@ -53,6 +70,7 @@ async def async_setup_entry(
         [
             WaterTemperatureSensor(marine, entry),
             WaveHeightSensor(marine, entry),
+            WavePeriodSensor(marine, entry),
             SwellHeightSensor(marine, entry),
             SwellDirectionSensor(marine, entry),
             TimestampMarineSensor(marine, entry),
@@ -152,10 +170,26 @@ class WaveHeightSensor(_BeachWeatherSensorBase):
     def extra_state_attributes(self) -> dict:
         if not self.available:
             return {}
-        return {
-            "wave_period": self.coordinator.data.get("wave_period"),
-            "time": self.coordinator.data.get("time"),
-        }
+        return {"time": self.coordinator.data.get("time")}
+
+
+class WavePeriodSensor(_BeachWeatherSensorBase):
+    _attr_icon = "mdi:sine-wave"
+    _attr_state_class = SensorStateClass.MEASUREMENT
+    _attr_native_unit_of_measurement = UnitOfTime.SECONDS
+
+    def __init__(self, coordinator: MarineCoordinator, entry: ConfigEntry) -> None:
+        super().__init__(coordinator, entry, KEY_WAVE_PERIOD)
+
+    @property
+    def available(self) -> bool:
+        return super().available and self.coordinator.data.get("wave_period") is not None
+
+    @property
+    def native_value(self) -> float | None:
+        if not self.available:
+            return None
+        return round(self.coordinator.data["wave_period"], 2)
 
 
 class SwellHeightSensor(_BeachWeatherSensorBase):
@@ -388,6 +422,9 @@ class BathingConditionsSensor(SensorEntity):
     async def async_added_to_hass(self) -> None:
         self.async_on_remove(self._marine.async_add_listener(self._handle_update))
         self.async_on_remove(self._forecast.async_add_listener(self._handle_update))
+        self.async_on_remove(
+            async_dispatcher_connect(self.hass, SIGNAL_THRESHOLDS_UPDATED, self._handle_update)
+        )
 
     @callback
     def _handle_update(self) -> None:
@@ -399,6 +436,10 @@ class BathingConditionsSensor(SensorEntity):
         return self._marine.data.get(field)
 
     @property
+    def _thresholds(self) -> dict[str, float]:
+        return self.hass.data.get(DOMAIN, {}).get("thresholds", DEFAULT_THRESHOLDS)
+
+    @property
     def available(self) -> bool:
         return True  # falls back to "No data" text state instead of unavailable
 
@@ -407,18 +448,23 @@ class BathingConditionsSensor(SensorEntity):
         wave_height = self._value("wave_height")
         water_temp = self._value("sea_surface_temperature")
         wave_period = self._value("wave_period")
+        t = self._thresholds
 
         if wave_height is None or water_temp is None:
             return "no_data"
-        if water_temp < 18:
+        if water_temp < t[KEY_TOO_COLD_MAX]:
             return "too_cold"
-        if wave_height < 1.0:
-            if water_temp > 22 and wave_period is not None and wave_period > 8:
+        if wave_height < t[KEY_CALM_WAVE_MAX]:
+            if (
+                water_temp > t[KEY_PERFECT_TEMP_MIN]
+                and wave_period is not None
+                and wave_period > t[KEY_PERFECT_PERIOD_MIN]
+            ):
                 return "perfect"
-            if water_temp > 20:
+            if water_temp > t[KEY_VERY_GOOD_TEMP_MIN]:
                 return "very_good"
             return "good"
-        if wave_height < 1.5:
+        if wave_height < t[KEY_MODERATE_WAVE_MAX]:
             return "moderate"
         return "poor"
 
@@ -427,9 +473,10 @@ class BathingConditionsSensor(SensorEntity):
         wave_height = self._value("wave_height")
         if wave_height is None:
             return "mdi:help-circle"
-        if wave_height < 1.0:
+        t = self._thresholds
+        if wave_height < t[KEY_CALM_WAVE_MAX]:
             return "mdi:emoticon-happy"
-        if wave_height < 1.5:
+        if wave_height < t[KEY_MODERATE_WAVE_MAX]:
             return "mdi:emoticon-neutral"
         return "mdi:emoticon-sad"
 

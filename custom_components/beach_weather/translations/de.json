@@ -21,11 +21,29 @@
   "options": {
     "step": {
       "init": {
-        "title": "Optionen",
+        "menu_options": {
+          "location": "Standort & Abfrageintervall",
+          "thresholds": "Schwellwerte Badebedingungen (alle Standorte)"
+        }
+      },
+      "location": {
+        "title": "Standort",
         "description": "Koordinaten oder Abfrageintervall anpassen.",
         "data": {
           "location": "Koordinaten",
           "scan_interval": "Abfrageintervall (Sekunden, min. 300)"
+        }
+      },
+      "thresholds": {
+        "title": "Schwellwerte Badebedingungen",
+        "description": "Gilt für alle Standorte, nicht nur diesen.",
+        "data": {
+          "too_cold_max": "Zu kalt unter (°C)",
+          "calm_wave_max": "Ruhiges Wasser unter (m)",
+          "moderate_wave_max": "Mittlere Wellen unter (m)",
+          "perfect_temp_min": "Perfekte Wassertemperatur über (°C)",
+          "perfect_period_min": "Perfekte Wellenperiode über (s)",
+          "very_good_temp_min": "Sehr gute Wassertemperatur über (°C)"
         }
       }
     }
@@ -34,6 +52,7 @@
     "sensor": {
       "water_temperature": { "name": "Wassertemperatur" },
       "wave_height": { "name": "Wellenhöhe" },
+      "wave_period": { "name": "Wellenperiode" },
       "swell_height": { "name": "Dünungshöhe" },
       "swell_direction": { "name": "Dünungsrichtung" },
       "timestamp": { "name": "Zeitstempel" },

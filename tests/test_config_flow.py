@@ -2,6 +2,7 @@
 import pytest
 from homeassistant import config_entries
 from homeassistant.data_entry_flow import FlowResultType
+from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.beach_weather.const import (
     CONF_LATITUDE,
@@ -10,7 +11,9 @@ from custom_components.beach_weather.const import (
     CONF_NAME,
     CONF_SCAN_INTERVAL,
     CONF_SLUG,
+    DEFAULT_THRESHOLDS,
     DOMAIN,
+    KEY_TOO_COLD_MAX,
 )
 
 LOCATION_INPUT = {"latitude": 39.8, "longitude": 3.11}
@@ -83,3 +86,43 @@ class TestConfigFlow:
             )
         assert result["type"] == FlowResultType.ABORT
         assert result["reason"] == "already_configured"
+
+
+class TestOptionsFlow:
+    def _make_entry(self, hass):
+        entry = MockConfigEntry(
+            domain=DOMAIN,
+            data={
+                CONF_NAME: "Platja de Muro",
+                CONF_SLUG: "platja_de_muro",
+                CONF_LATITUDE: 39.8,
+                CONF_LONGITUDE: 3.11,
+                CONF_SCAN_INTERVAL: 900,
+            },
+        )
+        entry.add_to_hass(hass)
+        return entry
+
+    async def test_init_shows_menu(self, hass):
+        entry = self._make_entry(hass)
+        result = await hass.config_entries.options.async_init(entry.entry_id)
+        assert result["type"] == FlowResultType.MENU
+        assert set(result["menu_options"]) == {"location", "thresholds"}
+
+    async def test_thresholds_step_saves_and_dispatches(self, hass):
+        entry = self._make_entry(hass)
+        hass.data.setdefault(DOMAIN, {})["thresholds"] = dict(DEFAULT_THRESHOLDS)
+
+        result = await hass.config_entries.options.async_init(entry.entry_id)
+        result = await hass.config_entries.options.async_configure(
+            result["flow_id"], {"next_step_id": "thresholds"}
+        )
+        assert result["type"] == FlowResultType.FORM
+        assert result["step_id"] == "thresholds"
+
+        new_values = {**DEFAULT_THRESHOLDS, KEY_TOO_COLD_MAX: 20.0}
+        result = await hass.config_entries.options.async_configure(
+            result["flow_id"], new_values
+        )
+        assert result["type"] == FlowResultType.CREATE_ENTRY
+        assert hass.data[DOMAIN]["thresholds"][KEY_TOO_COLD_MAX] == 20.0

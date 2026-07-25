@@ -34,6 +34,7 @@ DEFAULT_ERROR_BACKOFF = 300
 # Sensor keys (used for both unique_id suffix and entity_id prefix)
 KEY_WATER_TEMPERATURE = "water_temperature"
 KEY_WAVE_HEIGHT = "wave_height"
+KEY_WAVE_PERIOD = "wave_period"
 KEY_SWELL_HEIGHT = "swell_height"
 KEY_SWELL_DIRECTION = "swell_direction"
 KEY_TIMESTAMP_MARINE = "timestamp"
@@ -96,3 +97,36 @@ BATHING_CONDITION_OPTIONS = [
     "poor",
     "no_data",
 ]
+
+# Bathing Conditions thresholds — global across ALL locations, editable via
+# sliders in the integration's Configure dialog (Options flow "thresholds"
+# step). Persisted in a dedicated Store, not tied to any single config entry.
+KEY_TOO_COLD_MAX = "too_cold_max"
+KEY_CALM_WAVE_MAX = "calm_wave_max"
+KEY_MODERATE_WAVE_MAX = "moderate_wave_max"
+KEY_PERFECT_TEMP_MIN = "perfect_temp_min"
+KEY_PERFECT_PERIOD_MIN = "perfect_period_min"
+KEY_VERY_GOOD_TEMP_MIN = "very_good_temp_min"
+
+DEFAULT_THRESHOLDS: dict[str, float] = {
+    KEY_TOO_COLD_MAX: 18.0,
+    KEY_CALM_WAVE_MAX: 1.0,
+    KEY_MODERATE_WAVE_MAX: 1.5,
+    KEY_PERFECT_TEMP_MIN: 22.0,
+    KEY_PERFECT_PERIOD_MIN: 8.0,
+    KEY_VERY_GOOD_TEMP_MIN: 20.0,
+}
+
+# (min, max, step) per slider
+THRESHOLD_RANGES: dict[str, tuple[float, float, float]] = {
+    KEY_TOO_COLD_MAX: (10.0, 30.0, 0.5),
+    KEY_CALM_WAVE_MAX: (0.2, 3.0, 0.1),
+    KEY_MODERATE_WAVE_MAX: (0.5, 4.0, 0.1),
+    KEY_PERFECT_TEMP_MIN: (15.0, 35.0, 0.5),
+    KEY_PERFECT_PERIOD_MIN: (2.0, 20.0, 0.5),
+    KEY_VERY_GOOD_TEMP_MIN: (15.0, 35.0, 0.5),
+}
+
+STORAGE_VERSION = 1
+STORAGE_KEY = f"{DOMAIN}_thresholds"
+SIGNAL_THRESHOLDS_UPDATED = f"{DOMAIN}_thresholds_updated"

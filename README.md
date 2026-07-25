@@ -37,7 +37,8 @@ One HA device per location, named after the location. All entity IDs include a s
 | Entity | Description |
 |--------|-------------|
 | `sensor.water_temperature_platja_de_muro` | Sea surface temperature (°C) |
-| `sensor.wave_height_platja_de_muro` | Wave height (m), with wave period as an attribute |
+| `sensor.wave_height_platja_de_muro` | Wave height (m) |
+| `sensor.wave_period_platja_de_muro` | Wave period (s) |
 | `sensor.swell_height_platja_de_muro` | Swell wave height (m) — surf-relevant, separate from local wind chop |
 | `sensor.swell_direction_platja_de_muro` | Swell wave direction (°) |
 | `sensor.timestamp_platja_de_muro` | Timestamp of the marine data |
@@ -54,6 +55,10 @@ One HA device per location, named after the location. All entity IDs include a s
 | `button.update_now_platja_de_muro` | Forces an immediate refresh of both APIs for this location — bypasses the shared rate limiter and any active error backoff |
 
 A sensor becomes `unavailable` when Open-Meteo doesn't return a value for that field, or when the request fails. The two "Last Status" sensors are the exception — they stay visible even after a failed update, showing the raw status code (e.g. `403`) so a rate-limit issue is diagnosable without digging through the log.
+
+## Bathing condition thresholds
+
+The Bathing Conditions sensor's thresholds (too-cold cutoff, calm/moderate wave height, perfect/very-good water temperature, perfect wave period) are **global across all locations**, not per-location. Adjust them via **Settings → Devices & Services → Beach Weather → Configure** (on any location) → **Bathing condition thresholds** — rendered as sliders. Changes apply to every location's Bathing Conditions sensor immediately, no restart needed.
 
 ## Error handling & backoff
 

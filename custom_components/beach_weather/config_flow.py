@@ -5,7 +5,14 @@ import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.core import callback
 from homeassistant.data_entry_flow import FlowResult
-from homeassistant.helpers.selector import LocationSelector, LocationSelectorConfig
+from homeassistant.helpers.dispatcher import async_dispatcher_send
+from homeassistant.helpers.selector import (
+    LocationSelector,
+    LocationSelectorConfig,
+    NumberSelector,
+    NumberSelectorConfig,
+    NumberSelectorMode,
+)
 from homeassistant.util import slugify
 
 from .const import (
@@ -16,10 +23,14 @@ from .const import (
     CONF_SCAN_INTERVAL,
     CONF_SLUG,
     DEFAULT_SCAN_INTERVAL,
+    DEFAULT_THRESHOLDS,
     DOMAIN,
     MAX_SCAN_INTERVAL,
     MIN_SCAN_INTERVAL,
+    SIGNAL_THRESHOLDS_UPDATED,
+    THRESHOLD_RANGES,
 )
+from .thresholds import async_save_thresholds
 
 
 class BeachWeatherConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
@@ -74,6 +85,9 @@ class BeachWeatherConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
 class BeachWeatherOptionsFlow(config_entries.OptionsFlow):
     async def async_step_init(self, user_input=None) -> FlowResult:
+        return self.async_show_menu(step_id="init", menu_options=["location", "thresholds"])
+
+    async def async_step_location(self, user_input=None) -> FlowResult:
         if user_input is not None:
             return self.async_create_entry(title="", data=user_input)
 
@@ -93,4 +107,26 @@ class BeachWeatherOptionsFlow(config_entries.OptionsFlow):
                 ): vol.All(int, vol.Range(min=MIN_SCAN_INTERVAL, max=MAX_SCAN_INTERVAL)),
             }
         )
-        return self.async_show_form(step_id="init", data_schema=schema)
+        return self.async_show_form(step_id="location", data_schema=schema)
+
+    async def async_step_thresholds(self, user_input=None) -> FlowResult:
+        # Global across every location — persisted in a dedicated Store, not
+        # in this (or any single) entry's options, and pushed live to all
+        # Bathing Conditions sensors via a dispatcher signal on save.
+        if user_input is not None:
+            await async_save_thresholds(self.hass, user_input)
+            async_dispatcher_send(self.hass, SIGNAL_THRESHOLDS_UPDATED)
+            return self.async_create_entry(title="", data=self.config_entry.options)
+
+        current = self.hass.data.get(DOMAIN, {}).get("thresholds", DEFAULT_THRESHOLDS)
+        schema = vol.Schema(
+            {
+                vol.Required(key, default=current[key]): NumberSelector(
+                    NumberSelectorConfig(
+                        min=min_, max=max_, step=step, mode=NumberSelectorMode.SLIDER
+                    )
+                )
+                for key, (min_, max_, step) in THRESHOLD_RANGES.items()
+            }
+        )
+        return self.async_show_form(step_id="thresholds", data_schema=schema)

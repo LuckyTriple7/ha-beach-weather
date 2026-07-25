@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.6.0] - 2026-07-25
+### Added
+- Bathing Conditions thresholds are now configurable via sliders in the integration's Configure dialog (new "Bathing condition thresholds" menu option) — global across all locations, not per-location. Persisted in a dedicated Store and applied live to every location's sensor via a dispatcher signal, no restart needed
+- Wave period is now its own sensor (`sensor.wave_period_<slug>`) instead of an attribute on the Wave Height sensor
+
 ## [0.5.0] - 2026-07-24
 ### Added
 - "Update Now" button per location, forces an immediate refresh of both coordinators — bypasses the shared rate limiter and any active error backoff (an explicit manual action always wins over the automatic burst protection)
