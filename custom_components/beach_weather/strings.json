@@ -83,6 +83,7 @@
       "wave_period": { "name": "Wave Period" },
       "swell_height": { "name": "Swell Height" },
       "swell_direction": { "name": "Swell Direction" },
+      "swell_period": { "name": "Swell Period" },
       "timestamp": { "name": "Timestamp" },
       "wind_speed": { "name": "Wind Speed" },
       "wind_gusts": { "name": "Wind Gusts" },

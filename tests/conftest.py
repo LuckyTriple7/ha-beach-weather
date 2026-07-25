@@ -13,6 +13,7 @@ MOCK_MARINE_CURRENT = {
     "wave_period": 6.3,
     "swell_wave_height": 0.6,
     "swell_wave_direction": 210,
+    "swell_wave_period": 9.2,
 }
 
 MOCK_FORECAST_CURRENT = {

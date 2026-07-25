@@ -18,7 +18,7 @@ MAX_SCAN_INTERVAL = 3600
 MARINE_API_URL = "https://marine-api.open-meteo.com/v1/marine"
 MARINE_CURRENT_PARAMS = (
     "wave_height,wave_direction,wave_period,sea_surface_temperature,"
-    "swell_wave_height,swell_wave_direction"
+    "swell_wave_height,swell_wave_direction,swell_wave_period"
 )
 
 FORECAST_API_URL = "https://api.open-meteo.com/v1/forecast"
@@ -42,6 +42,7 @@ KEY_WAVE_HEIGHT = "wave_height"
 KEY_WAVE_PERIOD = "wave_period"
 KEY_SWELL_HEIGHT = "swell_height"
 KEY_SWELL_DIRECTION = "swell_direction"
+KEY_SWELL_PERIOD = "swell_period"
 KEY_TIMESTAMP_MARINE = "timestamp"
 KEY_WIND_SPEED = "wind_speed"
 KEY_WIND_GUSTS = "wind_gusts"

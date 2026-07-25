@@ -83,6 +83,7 @@
       "wave_period": { "name": "Wellenperiode" },
       "swell_height": { "name": "Dünungshöhe" },
       "swell_direction": { "name": "Dünungsrichtung" },
+      "swell_period": { "name": "Dünungsperiode" },
       "timestamp": { "name": "Zeitstempel" },
       "wind_speed": { "name": "Windgeschwindigkeit" },
       "wind_gusts": { "name": "Windböen" },

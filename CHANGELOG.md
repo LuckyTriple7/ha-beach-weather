@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.12.0] - 2026-07-25
+### Added
+- New `sensor.swell_period` (swell_wave_period from the Marine API), and the Surf Score's "wave period" factor now uses it instead of the mixed `wave_period` — isolates groundswell quality from local wind chop, sharpening the score
+- HA's "Download Diagnostics" is now supported per location: coordinator status, HTTP status, backoff state and raw data, plus global thresholds/surf weights (coordinates redacted)
+- Entity-level test coverage: setting up a real config entry and checking actual sensor states/attributes, not just the underlying pure logic
+
 ## [0.11.0] - 2026-07-25
 ### Added
 - `sensor.surf_score` now exposes a full breakdown as attributes: each factor's own sub-score, the weights used, both direction diffs, which bonuses fired, and the pre-bonus weighted average — the 0-100 number is no longer a black box

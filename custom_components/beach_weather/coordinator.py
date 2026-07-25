@@ -53,6 +53,18 @@ class OpenMeteoCoordinatorBase(DataUpdateCoordinator[dict[str, Any] | None]):
         self.last_status_code: int | None = None
 
     @property
+    def is_backing_off(self) -> bool:
+        if self._backoff_until is None:
+            return False
+        return asyncio.get_running_loop().time() < self._backoff_until
+
+    @property
+    def backoff_remaining_seconds(self) -> float | None:
+        if not self.is_backing_off:
+            return None
+        return round(self._backoff_until - asyncio.get_running_loop().time())
+
+    @property
     def _http(self) -> aiohttp.ClientSession:
         if self._session is None or self._session.closed:
             self._session = aiohttp.ClientSession()

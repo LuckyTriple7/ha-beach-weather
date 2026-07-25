@@ -57,6 +57,7 @@ from .const import (
     KEY_SURF_STARS,
     KEY_SWELL_DIRECTION,
     KEY_SWELL_HEIGHT,
+    KEY_SWELL_PERIOD,
     KEY_TIMESTAMP_MARINE,
     KEY_TIMESTAMP_WIND,
     KEY_TOO_COLD_MAX,
@@ -102,6 +103,7 @@ async def async_setup_entry(
             WavePeriodSensor(marine, entry),
             SwellHeightSensor(marine, entry),
             SwellDirectionSensor(marine, entry),
+            SwellPeriodSensor(marine, entry),
             TimestampMarineSensor(marine, entry),
             WindSpeedSensor(forecast, entry),
             WindGustsSensor(forecast, entry),
@@ -289,6 +291,28 @@ class SwellDirectionSensor(_BeachWeatherSensorBase):
         if not self.available:
             return None
         return round(self.coordinator.data["swell_wave_direction"])
+
+
+class SwellPeriodSensor(_BeachWeatherSensorBase):
+    """Swell period — surf-quality signal distinct from the mixed wave_period
+    (which includes local wind chop). Used by the Surf Score's period factor."""
+
+    _attr_icon = "mdi:sine-wave"
+    _attr_state_class = SensorStateClass.MEASUREMENT
+    _attr_native_unit_of_measurement = UnitOfTime.SECONDS
+
+    def __init__(self, coordinator: MarineCoordinator, entry: ConfigEntry) -> None:
+        super().__init__(coordinator, entry, KEY_SWELL_PERIOD)
+
+    @property
+    def available(self) -> bool:
+        return super().available and self.coordinator.data.get("swell_wave_period") is not None
+
+    @property
+    def native_value(self) -> float | None:
+        if not self.available:
+            return None
+        return round(self.coordinator.data["swell_wave_period"], 2)
 
 
 class TimestampMarineSensor(_BeachWeatherSensorBase):
@@ -823,8 +847,11 @@ class _SurfSensorBase(SensorEntity):
             return None
         m = self._marine.data
         f = self._forecast.data
+        # Uses swell_wave_period (not the mixed wave_period) — it isolates
+        # groundswell quality from local wind-driven chop, which is what the
+        # "wave period" factor is meant to reward.
         required = (
-            m.get("wave_period"),
+            m.get("swell_wave_period"),
             m.get("wave_height"),
             m.get("swell_wave_direction"),
             f.get("wind_direction_10m"),
@@ -839,7 +866,7 @@ class _SurfSensorBase(SensorEntity):
         orientation = effective.get(CONF_BEACH_ORIENTATION, DEFAULT_BEACH_ORIENTATION)
 
         return calculate_surf_score_details(
-            wave_period=m["wave_period"],
+            wave_period=m["swell_wave_period"],
             wave_height=m["wave_height"],
             swell_direction=m["swell_wave_direction"],
             wind_direction=f["wind_direction_10m"],

@@ -46,6 +46,7 @@ One HA device per location, named after the location. All entity IDs include a s
 | `sensor.wave_period_platja_de_muro` | Wave period (s) |
 | `sensor.swell_height_platja_de_muro` | Swell wave height (m) — surf-relevant, separate from local wind chop |
 | `sensor.swell_direction_platja_de_muro` | Swell wave direction (°) |
+| `sensor.swell_period_platja_de_muro` | Swell period (s) — surf-quality signal, distinct from the mixed wave period; used by the Surf Score |
 | `sensor.timestamp_platja_de_muro` | Timestamp of the marine data |
 | `sensor.wind_speed_platja_de_muro` | Wind speed (km/h) |
 | `sensor.wind_gusts_platja_de_muro` | Wind gusts (km/h) |
@@ -82,7 +83,7 @@ The Bathing Conditions sensor's thresholds (too-cold cutoff, calm/moderate wave 
 
 | Factor | Default weight | What's rewarded |
 |--------|-----------------|------------------|
-| Wave period | 30% | 10-14s ideal; very short periods (wind chop) score near 0 |
+| Wave period | 30% | Uses the **swell period** (not the mixed wave period, which includes local wind chop); 10-14s ideal, very short periods score near 0 |
 | Wave height | 20% | 0.8-1.5m ideal; too flat or too big scores lower |
 | Swell direction | 20% | How closely swell direction matches the beach orientation |
 | Wind direction | 15% | How closely wind direction matches the beach orientation |
@@ -92,6 +93,10 @@ The Bathing Conditions sensor's thresholds (too-cold cutoff, calm/moderate wave 
 Weights don't need to add up to 100 — they're normalized by their sum automatically. Two bonuses (+10 each, stacking, total capped at 100): swell hits the beach head-on *and* wind blows offshore; or wave period > 10s *and* wave height > 0.8m. Direction scoring needs each location's **beach orientation** (set during setup or via Configure → Location); without it, the direction sub-scores default to comparing against 0°, which will usually be wrong for that beach.
 
 `sensor.surf_score`'s attributes break down exactly how the number was reached: each factor's own 0-100 sub-score (`wave_period_score`, `wave_height_score`, `swell_direction_score`, `wind_direction_score`, `wind_speed_score`, `water_temperature_score`), the weights actually used, both direction diffs in degrees, which of the two bonuses fired, and the weighted average before bonuses were added.
+
+## Diagnostics
+
+Each location supports HA's **Download Diagnostics** (Settings → Devices & Services → Beach Weather → the location's device → ⋮ → Download Diagnostics). Includes both coordinators' last update status, HTTP status code, backoff state and raw data, plus the global bathing-condition thresholds and surf-score weights — coordinates are redacted.
 
 ## Error handling & backoff
 
