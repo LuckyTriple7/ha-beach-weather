@@ -79,6 +79,7 @@
     "sensor": {
       "water_temperature": { "name": "Water Temperature" },
       "wave_height": { "name": "Wave Height" },
+      "wave_direction": { "name": "Wave Direction" },
       "wave_period": { "name": "Wave Period" },
       "swell_height": { "name": "Swell Height" },
       "swell_direction": { "name": "Swell Direction" },
@@ -87,6 +88,20 @@
       "wind_gusts": { "name": "Wind Gusts" },
       "wind_direction": { "name": "Wind Direction" },
       "air_temperature": { "name": "Air Temperature" },
+      "humidity": { "name": "Humidity" },
+      "precipitation": { "name": "Precipitation" },
+      "rain": { "name": "Rain" },
+      "showers": { "name": "Showers" },
+      "pressure": { "name": "Pressure" },
+      "cloud_cover": { "name": "Cloud Cover" },
+      "uv_index": { "name": "UV Index" },
+      "is_day": {
+        "name": "Day/Night",
+        "state": {
+          "day": "☀️ Day",
+          "night": "🌙 Night"
+        }
+      },
       "weather_condition": {
         "name": "Weather Condition",
         "state": {

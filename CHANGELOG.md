@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.10.0] - 2026-07-25
+### Added
+- 8 new sensors per location, all from data already covered by the existing API calls (no extra requests): wave direction, humidity, precipitation, rain, showers, pressure, cloud cover, UV index, and day/night
+
 ## [0.9.0] - 2026-07-25
 ### Added
 - The "Paste coordinates" field also accepts a free-text place name now (e.g. "Maspalomas beach") — forward-geocoded via Nominatim to coordinates + a suggested name, same review-before-save flow as pasting raw coordinates

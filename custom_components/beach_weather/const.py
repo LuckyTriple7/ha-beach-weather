@@ -17,14 +17,15 @@ MAX_SCAN_INTERVAL = 3600
 
 MARINE_API_URL = "https://marine-api.open-meteo.com/v1/marine"
 MARINE_CURRENT_PARAMS = (
-    "wave_height,wave_period,sea_surface_temperature,"
+    "wave_height,wave_direction,wave_period,sea_surface_temperature,"
     "swell_wave_height,swell_wave_direction"
 )
 
 FORECAST_API_URL = "https://api.open-meteo.com/v1/forecast"
 FORECAST_CURRENT_PARAMS = (
     "wind_speed_10m,wind_direction_10m,wind_gusts_10m,"
-    "temperature_2m,weather_code"
+    "temperature_2m,weather_code,relative_humidity_2m,precipitation,rain,"
+    "showers,pressure_msl,cloud_cover,uv_index,is_day"
 )
 
 # Global outbound-request pacing (shared across ALL config entries/coordinators)
@@ -53,6 +54,17 @@ KEY_LOCATION = "location"
 KEY_UPDATE_NOW = "update_now"
 KEY_LAST_STATUS = "last_status"
 KEY_LAST_STATUS_WIND = "last_status_wind"
+KEY_WAVE_DIRECTION = "wave_direction"
+KEY_HUMIDITY = "humidity"
+KEY_PRECIPITATION = "precipitation"
+KEY_RAIN = "rain"
+KEY_SHOWERS = "showers"
+KEY_PRESSURE = "pressure"
+KEY_CLOUD_COVER = "cloud_cover"
+KEY_UV_INDEX = "uv_index"
+KEY_IS_DAY = "is_day"
+
+IS_DAY_OPTIONS = ["day", "night"]
 KEY_SURF_SCORE = "surf_score"
 KEY_SURF_CONDITION = "surf_condition"
 KEY_SURF_STARS = "surf_stars"

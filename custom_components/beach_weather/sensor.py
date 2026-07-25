@@ -10,8 +10,11 @@ from homeassistant.components.sensor import (
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
     DEGREE,
+    PERCENTAGE,
     EntityCategory,
     UnitOfLength,
+    UnitOfPrecipitationDepth,
+    UnitOfPressure,
     UnitOfSpeed,
     UnitOfTemperature,
     UnitOfTime,
@@ -32,15 +35,23 @@ from .const import (
     DEFAULT_THRESHOLDS,
     DEFAULT_WMO_CONDITION,
     DOMAIN,
+    IS_DAY_OPTIONS,
     KEY_AIR_TEMPERATURE,
     KEY_BATHING_CONDITIONS,
     KEY_CALM_WAVE_MAX,
+    KEY_CLOUD_COVER,
+    KEY_HUMIDITY,
+    KEY_IS_DAY,
     KEY_LAST_STATUS,
     KEY_LAST_STATUS_WIND,
     KEY_LOCATION,
     KEY_MODERATE_WAVE_MAX,
     KEY_PERFECT_PERIOD_MIN,
     KEY_PERFECT_TEMP_MIN,
+    KEY_PRECIPITATION,
+    KEY_PRESSURE,
+    KEY_RAIN,
+    KEY_SHOWERS,
     KEY_SURF_CONDITION,
     KEY_SURF_SCORE,
     KEY_SURF_STARS,
@@ -49,8 +60,10 @@ from .const import (
     KEY_TIMESTAMP_MARINE,
     KEY_TIMESTAMP_WIND,
     KEY_TOO_COLD_MAX,
+    KEY_UV_INDEX,
     KEY_VERY_GOOD_TEMP_MIN,
     KEY_WATER_TEMPERATURE,
+    KEY_WAVE_DIRECTION,
     KEY_WAVE_HEIGHT,
     KEY_WAVE_PERIOD,
     KEY_WEATHER_CONDITION,
@@ -79,6 +92,7 @@ async def async_setup_entry(
         [
             WaterTemperatureSensor(marine, entry),
             WaveHeightSensor(marine, entry),
+            WaveDirectionSensor(marine, entry),
             WavePeriodSensor(marine, entry),
             SwellHeightSensor(marine, entry),
             SwellDirectionSensor(marine, entry),
@@ -87,6 +101,14 @@ async def async_setup_entry(
             WindGustsSensor(forecast, entry),
             WindDirectionSensor(forecast, entry),
             AirTemperatureSensor(forecast, entry),
+            HumiditySensor(forecast, entry),
+            PrecipitationSensor(forecast, entry),
+            RainSensor(forecast, entry),
+            ShowersSensor(forecast, entry),
+            PressureSensor(forecast, entry),
+            CloudCoverSensor(forecast, entry),
+            UvIndexSensor(forecast, entry),
+            IsDaySensor(forecast, entry),
             WeatherConditionSensor(forecast, entry),
             TimestampWindSensor(forecast, entry),
             BathingConditionsSensor(marine, forecast, entry),
@@ -183,6 +205,25 @@ class WaveHeightSensor(_BeachWeatherSensorBase):
         if not self.available:
             return {}
         return {"time": self.coordinator.data.get("time")}
+
+
+class WaveDirectionSensor(_BeachWeatherSensorBase):
+    _attr_icon = "mdi:compass-outline"
+    _attr_state_class = SensorStateClass.MEASUREMENT
+    _attr_native_unit_of_measurement = DEGREE
+
+    def __init__(self, coordinator: MarineCoordinator, entry: ConfigEntry) -> None:
+        super().__init__(coordinator, entry, KEY_WAVE_DIRECTION)
+
+    @property
+    def available(self) -> bool:
+        return super().available and self.coordinator.data.get("wave_direction") is not None
+
+    @property
+    def native_value(self) -> int | None:
+        if not self.available:
+            return None
+        return round(self.coordinator.data["wave_direction"])
 
 
 class WavePeriodSensor(_BeachWeatherSensorBase):
@@ -341,6 +382,164 @@ class AirTemperatureSensor(_BeachWeatherSensorBase):
         if not self.available:
             return None
         return round(self.coordinator.data["temperature_2m"], 1)
+
+
+class HumiditySensor(_BeachWeatherSensorBase):
+    _attr_device_class = SensorDeviceClass.HUMIDITY
+    _attr_state_class = SensorStateClass.MEASUREMENT
+    _attr_native_unit_of_measurement = PERCENTAGE
+
+    def __init__(self, coordinator: ForecastCoordinator, entry: ConfigEntry) -> None:
+        super().__init__(coordinator, entry, KEY_HUMIDITY)
+
+    @property
+    def available(self) -> bool:
+        return super().available and self.coordinator.data.get("relative_humidity_2m") is not None
+
+    @property
+    def native_value(self) -> int | None:
+        if not self.available:
+            return None
+        return round(self.coordinator.data["relative_humidity_2m"])
+
+
+class PrecipitationSensor(_BeachWeatherSensorBase):
+    _attr_device_class = SensorDeviceClass.PRECIPITATION
+    _attr_state_class = SensorStateClass.MEASUREMENT
+    _attr_native_unit_of_measurement = UnitOfPrecipitationDepth.MILLIMETERS
+
+    def __init__(self, coordinator: ForecastCoordinator, entry: ConfigEntry) -> None:
+        super().__init__(coordinator, entry, KEY_PRECIPITATION)
+
+    @property
+    def available(self) -> bool:
+        return super().available and self.coordinator.data.get("precipitation") is not None
+
+    @property
+    def native_value(self) -> float | None:
+        if not self.available:
+            return None
+        return round(self.coordinator.data["precipitation"], 2)
+
+
+class RainSensor(_BeachWeatherSensorBase):
+    _attr_device_class = SensorDeviceClass.PRECIPITATION
+    _attr_state_class = SensorStateClass.MEASUREMENT
+    _attr_native_unit_of_measurement = UnitOfPrecipitationDepth.MILLIMETERS
+
+    def __init__(self, coordinator: ForecastCoordinator, entry: ConfigEntry) -> None:
+        super().__init__(coordinator, entry, KEY_RAIN)
+
+    @property
+    def available(self) -> bool:
+        return super().available and self.coordinator.data.get("rain") is not None
+
+    @property
+    def native_value(self) -> float | None:
+        if not self.available:
+            return None
+        return round(self.coordinator.data["rain"], 2)
+
+
+class ShowersSensor(_BeachWeatherSensorBase):
+    _attr_device_class = SensorDeviceClass.PRECIPITATION
+    _attr_state_class = SensorStateClass.MEASUREMENT
+    _attr_native_unit_of_measurement = UnitOfPrecipitationDepth.MILLIMETERS
+
+    def __init__(self, coordinator: ForecastCoordinator, entry: ConfigEntry) -> None:
+        super().__init__(coordinator, entry, KEY_SHOWERS)
+
+    @property
+    def available(self) -> bool:
+        return super().available and self.coordinator.data.get("showers") is not None
+
+    @property
+    def native_value(self) -> float | None:
+        if not self.available:
+            return None
+        return round(self.coordinator.data["showers"], 2)
+
+
+class PressureSensor(_BeachWeatherSensorBase):
+    _attr_device_class = SensorDeviceClass.PRESSURE
+    _attr_state_class = SensorStateClass.MEASUREMENT
+    _attr_native_unit_of_measurement = UnitOfPressure.HPA
+
+    def __init__(self, coordinator: ForecastCoordinator, entry: ConfigEntry) -> None:
+        super().__init__(coordinator, entry, KEY_PRESSURE)
+
+    @property
+    def available(self) -> bool:
+        return super().available and self.coordinator.data.get("pressure_msl") is not None
+
+    @property
+    def native_value(self) -> float | None:
+        if not self.available:
+            return None
+        return round(self.coordinator.data["pressure_msl"], 1)
+
+
+class CloudCoverSensor(_BeachWeatherSensorBase):
+    _attr_icon = "mdi:cloud-percent-outline"
+    _attr_state_class = SensorStateClass.MEASUREMENT
+    _attr_native_unit_of_measurement = PERCENTAGE
+
+    def __init__(self, coordinator: ForecastCoordinator, entry: ConfigEntry) -> None:
+        super().__init__(coordinator, entry, KEY_CLOUD_COVER)
+
+    @property
+    def available(self) -> bool:
+        return super().available and self.coordinator.data.get("cloud_cover") is not None
+
+    @property
+    def native_value(self) -> int | None:
+        if not self.available:
+            return None
+        return round(self.coordinator.data["cloud_cover"])
+
+
+class UvIndexSensor(_BeachWeatherSensorBase):
+    _attr_icon = "mdi:weather-sunny-alert"
+    _attr_state_class = SensorStateClass.MEASUREMENT
+
+    def __init__(self, coordinator: ForecastCoordinator, entry: ConfigEntry) -> None:
+        super().__init__(coordinator, entry, KEY_UV_INDEX)
+
+    @property
+    def available(self) -> bool:
+        return super().available and self.coordinator.data.get("uv_index") is not None
+
+    @property
+    def native_value(self) -> float | None:
+        if not self.available:
+            return None
+        return round(self.coordinator.data["uv_index"], 1)
+
+
+class IsDaySensor(_BeachWeatherSensorBase):
+    """Day/night flag, translated to a stable enum key ("day"/"night")."""
+
+    _attr_device_class = SensorDeviceClass.ENUM
+    _attr_options = IS_DAY_OPTIONS
+
+    def __init__(self, coordinator: ForecastCoordinator, entry: ConfigEntry) -> None:
+        super().__init__(coordinator, entry, KEY_IS_DAY)
+
+    @property
+    def available(self) -> bool:
+        return super().available and self.coordinator.data.get("is_day") is not None
+
+    @property
+    def native_value(self) -> str | None:
+        if not self.available:
+            return None
+        return "day" if self.coordinator.data["is_day"] else "night"
+
+    @property
+    def icon(self) -> str:
+        if not self.available:
+            return "mdi:help-circle"
+        return "mdi:weather-sunny" if self.coordinator.data["is_day"] else "mdi:weather-night"
 
 
 class WeatherConditionSensor(_BeachWeatherSensorBase):

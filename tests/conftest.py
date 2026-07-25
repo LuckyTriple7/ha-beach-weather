@@ -9,6 +9,7 @@ MOCK_MARINE_CURRENT = {
     "time": "2026-07-22T15:30",
     "sea_surface_temperature": 23.8,
     "wave_height": 0.84,
+    "wave_direction": 39,
     "wave_period": 6.3,
     "swell_wave_height": 0.6,
     "swell_wave_direction": 210,
@@ -21,6 +22,14 @@ MOCK_FORECAST_CURRENT = {
     "wind_gusts_10m": 49.7,
     "temperature_2m": 27.4,
     "weather_code": 1,
+    "relative_humidity_2m": 67,
+    "precipitation": 0.0,
+    "rain": 0.0,
+    "showers": 0.0,
+    "pressure_msl": 1008.9,
+    "cloud_cover": 92,
+    "uv_index": 6.15,
+    "is_day": 1,
 }
 
 

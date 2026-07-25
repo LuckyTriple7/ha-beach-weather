@@ -42,6 +42,7 @@ One HA device per location, named after the location. All entity IDs include a s
 |--------|-------------|
 | `sensor.water_temperature_platja_de_muro` | Sea surface temperature (°C) |
 | `sensor.wave_height_platja_de_muro` | Wave height (m) |
+| `sensor.wave_direction_platja_de_muro` | Overall wave direction (°) |
 | `sensor.wave_period_platja_de_muro` | Wave period (s) |
 | `sensor.swell_height_platja_de_muro` | Swell wave height (m) — surf-relevant, separate from local wind chop |
 | `sensor.swell_direction_platja_de_muro` | Swell wave direction (°) |
@@ -50,6 +51,14 @@ One HA device per location, named after the location. All entity IDs include a s
 | `sensor.wind_gusts_platja_de_muro` | Wind gusts (km/h) |
 | `sensor.wind_direction_platja_de_muro` | Wind direction (°) |
 | `sensor.air_temperature_platja_de_muro` | Air temperature at 2m (°C) |
+| `sensor.humidity_platja_de_muro` | Relative humidity (%) |
+| `sensor.precipitation_platja_de_muro` | Precipitation, current interval (mm) |
+| `sensor.rain_platja_de_muro` | Rain, current interval (mm) |
+| `sensor.showers_platja_de_muro` | Showers, current interval (mm) |
+| `sensor.pressure_platja_de_muro` | Sea-level air pressure (hPa) |
+| `sensor.cloud_cover_platja_de_muro` | Cloud cover (%) |
+| `sensor.uv_index_platja_de_muro` | UV index |
+| `sensor.is_day_platja_de_muro` | Day/Night |
 | `sensor.weather_condition_platja_de_muro` | Human-readable weather condition (from WMO weather code), with the raw code as an attribute |
 | `sensor.timestamp_wind_platja_de_muro` | Timestamp of the wind/weather data |
 | `sensor.bathing_conditions_platja_de_muro` | Computed bathing-conditions text/icon (no own API call) |
