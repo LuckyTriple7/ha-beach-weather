@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.7.0] - 2026-07-25
+### Added
+- Surf Score: three new sensors (`sensor.surf_score`, `sensor.surf_condition`, `sensor.surf_stars`) computing a 0-100 surf quality score from wave period/height, swell/wind direction alignment, wind speed and water temperature, weighted and combined into a category and star rating. Weights are global across all locations, adjustable via sliders in Configure → "Surf score weighting"
+- New per-location "beach orientation" field (set during setup or via Configure → Location) — the reference compass direction the Surf Score uses to judge wind/swell alignment
+
+### Fixed
+- Changing coordinates via the integration's Configure dialog never actually applied — the location picker's value was saved as a nested object instead of being flattened into the fields the coordinator reads. Editing a location's coordinates now works.
+
 ## [0.6.0] - 2026-07-25
 ### Added
 - Bathing Conditions thresholds are now configurable via sliders in the integration's Configure dialog (new "Bathing condition thresholds" menu option) — global across all locations, not per-location. Persisted in a dedicated Store and applied live to every location's sensor via a dispatcher signal, no restart needed

@@ -6,6 +6,9 @@ CONF_LOCATION = "location"  # transient config-flow field (LocationSelector dict
 CONF_LATITUDE = "latitude"
 CONF_LONGITUDE = "longitude"
 CONF_SCAN_INTERVAL = "scan_interval"
+CONF_BEACH_ORIENTATION = "beach_orientation"  # ° compass, used for surf-score direction diffs
+
+DEFAULT_BEACH_ORIENTATION = 0
 
 DEFAULT_SCAN_INTERVAL = 900  # seconds, per API
 MIN_SCAN_INTERVAL = 300
@@ -49,6 +52,9 @@ KEY_LOCATION = "location"
 KEY_UPDATE_NOW = "update_now"
 KEY_LAST_STATUS = "last_status"
 KEY_LAST_STATUS_WIND = "last_status_wind"
+KEY_SURF_SCORE = "surf_score"
+KEY_SURF_CONDITION = "surf_condition"
+KEY_SURF_STARS = "surf_stars"
 
 # WMO weather interpretation codes (used by the Weather Condition sensor).
 # Maps each code to a (translation-key, icon) pair — the key is a stable,
@@ -130,3 +136,34 @@ THRESHOLD_RANGES: dict[str, tuple[float, float, float]] = {
 STORAGE_VERSION = 1
 STORAGE_KEY = f"{DOMAIN}_thresholds"
 SIGNAL_THRESHOLDS_UPDATED = f"{DOMAIN}_thresholds_updated"
+
+# Surf Score — weighted blend of wave period/height, swell/wind direction
+# alignment (vs. CONF_BEACH_ORIENTATION), wind speed and water temperature.
+# Weights are global across ALL locations, editable via sliders in the
+# integration's Configure dialog (Options flow "surf_weights" step).
+KEY_WEIGHT_WAVE_PERIOD = "weight_wave_period"
+KEY_WEIGHT_WAVE_HEIGHT = "weight_wave_height"
+KEY_WEIGHT_SWELL_DIRECTION = "weight_swell_direction"
+KEY_WEIGHT_WIND_DIRECTION = "weight_wind_direction"
+KEY_WEIGHT_WIND_SPEED = "weight_wind_speed"
+KEY_WEIGHT_WATER_TEMPERATURE = "weight_water_temperature"
+
+DEFAULT_SURF_WEIGHTS: dict[str, float] = {
+    KEY_WEIGHT_WAVE_PERIOD: 30.0,
+    KEY_WEIGHT_WAVE_HEIGHT: 20.0,
+    KEY_WEIGHT_SWELL_DIRECTION: 20.0,
+    KEY_WEIGHT_WIND_DIRECTION: 15.0,
+    KEY_WEIGHT_WIND_SPEED: 10.0,
+    KEY_WEIGHT_WATER_TEMPERATURE: 5.0,
+}
+
+# Same (min, max, step) slider range for every weight — they're normalized
+# by their sum at calculation time, so they don't need to add up to 100.
+SURF_WEIGHT_RANGE: tuple[float, float, float] = (0.0, 100.0, 1.0)
+
+# Surf Condition enum values — the displayed label (including emoji) is
+# looked up via entity.sensor.surf_condition.state.<key>.
+SURF_CONDITION_OPTIONS = ["no_surf", "poor", "okay", "good", "very_good", "perfect"]
+
+STORAGE_KEY_SURF_WEIGHTS = f"{DOMAIN}_surf_weights"
+SIGNAL_SURF_WEIGHTS_UPDATED = f"{DOMAIN}_surf_weights_updated"

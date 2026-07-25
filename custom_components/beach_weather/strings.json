@@ -7,7 +7,8 @@
         "data": {
           "name": "Name",
           "location": "Coordinates (enter manually or pick on the map)",
-          "scan_interval": "Poll interval (seconds, min. 300)"
+          "scan_interval": "Poll interval (seconds, min. 300)",
+          "beach_orientation": "Beach orientation (° compass, seaward)"
         }
       }
     },
@@ -23,7 +24,8 @@
       "init": {
         "menu_options": {
           "location": "Location & polling interval",
-          "thresholds": "Bathing condition thresholds (all locations)"
+          "thresholds": "Bathing condition thresholds (all locations)",
+          "surf_weights": "Surf score weighting (all locations)"
         }
       },
       "location": {
@@ -31,7 +33,8 @@
         "description": "Adjust coordinates or poll interval.",
         "data": {
           "location": "Coordinates",
-          "scan_interval": "Poll interval (seconds, min. 300)"
+          "scan_interval": "Poll interval (seconds, min. 300)",
+          "beach_orientation": "Beach orientation (° compass, seaward)"
         }
       },
       "thresholds": {
@@ -44,6 +47,18 @@
           "perfect_temp_min": "Perfect water temperature above (°C)",
           "perfect_period_min": "Perfect wave period above (s)",
           "very_good_temp_min": "Very good water temperature above (°C)"
+        }
+      },
+      "surf_weights": {
+        "title": "Surf Score Weighting",
+        "description": "Applies to all locations, not just this one. Weights don't need to add up to 100 — they're normalized automatically.",
+        "data": {
+          "weight_wave_period": "Wave period",
+          "weight_wave_height": "Wave height",
+          "weight_swell_direction": "Swell direction",
+          "weight_wind_direction": "Wind direction",
+          "weight_wind_speed": "Wind speed",
+          "weight_water_temperature": "Water temperature"
         }
       }
     }
@@ -109,7 +124,20 @@
       },
       "location": { "name": "Location" },
       "last_status": { "name": "Marine API Status" },
-      "last_status_wind": { "name": "Weather API Status" }
+      "last_status_wind": { "name": "Weather API Status" },
+      "surf_score": { "name": "Surf Score" },
+      "surf_condition": {
+        "name": "Surf Condition",
+        "state": {
+          "no_surf": "🚫 No surf",
+          "poor": "🔴 Poor",
+          "okay": "🟡 Okay",
+          "good": "🟢 Good",
+          "very_good": "🟢 Very good",
+          "perfect": "🔥 Perfect conditions"
+        }
+      },
+      "surf_stars": { "name": "Surf Stars" }
     },
     "button": {
       "update_now": { "name": "Update Now" }

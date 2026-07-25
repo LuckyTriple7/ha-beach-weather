@@ -24,8 +24,11 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import (
     BATHING_CONDITION_OPTIONS,
+    CONF_BEACH_ORIENTATION,
     CONF_NAME,
     CONF_SLUG,
+    DEFAULT_BEACH_ORIENTATION,
+    DEFAULT_SURF_WEIGHTS,
     DEFAULT_THRESHOLDS,
     DEFAULT_WMO_CONDITION,
     DOMAIN,
@@ -38,6 +41,9 @@ from .const import (
     KEY_MODERATE_WAVE_MAX,
     KEY_PERFECT_PERIOD_MIN,
     KEY_PERFECT_TEMP_MIN,
+    KEY_SURF_CONDITION,
+    KEY_SURF_SCORE,
+    KEY_SURF_STARS,
     KEY_SWELL_DIRECTION,
     KEY_SWELL_HEIGHT,
     KEY_TIMESTAMP_MARINE,
@@ -51,10 +57,13 @@ from .const import (
     KEY_WIND_DIRECTION,
     KEY_WIND_GUSTS,
     KEY_WIND_SPEED,
+    SIGNAL_SURF_WEIGHTS_UPDATED,
     SIGNAL_THRESHOLDS_UPDATED,
+    SURF_CONDITION_OPTIONS,
     WMO_CONDITIONS,
 )
 from .coordinator import ForecastCoordinator, MarineCoordinator
+from .surf import calculate_surf_score, surf_condition_for_score, surf_stars_for_score
 
 
 async def async_setup_entry(
@@ -84,6 +93,9 @@ async def async_setup_entry(
             LocationSensor(entry),
             LastStatusMarineSensor(marine, entry),
             LastStatusWindSensor(forecast, entry),
+            SurfScoreSensor(marine, forecast, entry),
+            SurfConditionSensor(marine, forecast, entry),
+            SurfStarsSensor(marine, forecast, entry),
         ]
     )
 
@@ -558,3 +570,134 @@ class LastStatusMarineSensor(_LastStatusSensorBase):
 class LastStatusWindSensor(_LastStatusSensorBase):
     def __init__(self, coordinator: ForecastCoordinator, entry: ConfigEntry) -> None:
         super().__init__(coordinator, entry, KEY_LAST_STATUS_WIND)
+
+
+class _SurfSensorBase(SensorEntity):
+    """Purely computed from Marine + Forecast raw values plus the location's
+    beach orientation and the global surf-score weights, no own API call.
+
+    Listens to both coordinators manually (like BathingConditionsSensor) plus
+    the surf-weights dispatcher signal, so a slider change in the Configure
+    dialog updates every location's surf sensors immediately."""
+
+    _attr_has_entity_name = True
+    _attr_should_poll = False
+
+    def __init__(
+        self,
+        marine: MarineCoordinator,
+        forecast: ForecastCoordinator,
+        entry: ConfigEntry,
+        key: str,
+    ) -> None:
+        self._marine = marine
+        self._forecast = forecast
+        self._entry = entry
+        slug = entry.data[CONF_SLUG]
+        self._attr_unique_id = f"{entry.entry_id}_{key}"
+        self._attr_translation_key = key
+        self.entity_id = f"sensor.{key}_{slug}"
+        self._attr_device_info = _device_info(entry)
+
+    async def async_added_to_hass(self) -> None:
+        self.async_on_remove(self._marine.async_add_listener(self._handle_update))
+        self.async_on_remove(self._forecast.async_add_listener(self._handle_update))
+        self.async_on_remove(
+            async_dispatcher_connect(self.hass, SIGNAL_SURF_WEIGHTS_UPDATED, self._handle_update)
+        )
+
+    @callback
+    def _handle_update(self) -> None:
+        self.async_write_ha_state()
+
+    @property
+    def _score(self) -> float | None:
+        if not self._marine.last_update_success or not self._marine.data:
+            return None
+        if not self._forecast.last_update_success or not self._forecast.data:
+            return None
+        m = self._marine.data
+        f = self._forecast.data
+        required = (
+            m.get("wave_period"),
+            m.get("wave_height"),
+            m.get("swell_wave_direction"),
+            f.get("wind_direction_10m"),
+            f.get("wind_speed_10m"),
+            m.get("sea_surface_temperature"),
+        )
+        if any(value is None for value in required):
+            return None
+
+        weights = self.hass.data.get(DOMAIN, {}).get("surf_weights", DEFAULT_SURF_WEIGHTS)
+        effective = {**self._entry.data, **self._entry.options}
+        orientation = effective.get(CONF_BEACH_ORIENTATION, DEFAULT_BEACH_ORIENTATION)
+
+        return calculate_surf_score(
+            wave_period=m["wave_period"],
+            wave_height=m["wave_height"],
+            swell_direction=m["swell_wave_direction"],
+            wind_direction=f["wind_direction_10m"],
+            wind_speed=f["wind_speed_10m"],
+            water_temperature=m["sea_surface_temperature"],
+            beach_orientation=orientation,
+            weights=weights,
+        )
+
+    @property
+    def available(self) -> bool:
+        return self._score is not None
+
+
+class SurfScoreSensor(_SurfSensorBase):
+    _attr_icon = "mdi:surfing"
+    _attr_state_class = SensorStateClass.MEASUREMENT
+
+    def __init__(
+        self, marine: MarineCoordinator, forecast: ForecastCoordinator, entry: ConfigEntry
+    ) -> None:
+        super().__init__(marine, forecast, entry, KEY_SURF_SCORE)
+
+    @property
+    def native_value(self) -> int | None:
+        score = self._score
+        return round(score) if score is not None else None
+
+
+class SurfConditionSensor(_SurfSensorBase):
+    _attr_icon = "mdi:surfing"
+    _attr_device_class = SensorDeviceClass.ENUM
+    _attr_options = SURF_CONDITION_OPTIONS
+
+    def __init__(
+        self, marine: MarineCoordinator, forecast: ForecastCoordinator, entry: ConfigEntry
+    ) -> None:
+        super().__init__(marine, forecast, entry, KEY_SURF_CONDITION)
+
+    @property
+    def native_value(self) -> str | None:
+        score = self._score
+        return surf_condition_for_score(score) if score is not None else None
+
+
+class SurfStarsSensor(_SurfSensorBase):
+    _attr_icon = "mdi:star"
+
+    def __init__(
+        self, marine: MarineCoordinator, forecast: ForecastCoordinator, entry: ConfigEntry
+    ) -> None:
+        super().__init__(marine, forecast, entry, KEY_SURF_STARS)
+
+    @property
+    def native_value(self) -> str | None:
+        score = self._score
+        if score is None:
+            return None
+        return "★" * surf_stars_for_score(score)
+
+    @property
+    def extra_state_attributes(self) -> dict:
+        score = self._score
+        if score is None:
+            return {}
+        return {"stars": surf_stars_for_score(score), "score": round(score)}

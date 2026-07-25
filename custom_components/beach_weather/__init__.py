@@ -17,7 +17,7 @@ from .const import (
 )
 from .coordinator import ForecastCoordinator, MarineCoordinator
 from .ratelimiter import OpenMeteoRateLimiter
-from .thresholds import async_load_thresholds
+from .thresholds import async_load_surf_weights, async_load_thresholds
 
 PLATFORMS = ["sensor", "button"]
 
@@ -27,6 +27,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     domain_data.setdefault("rate_limiter", OpenMeteoRateLimiter(RATE_LIMIT_MIN_SPACING))
     if "thresholds" not in domain_data:
         domain_data["thresholds"] = await async_load_thresholds(hass)
+    if "surf_weights" not in domain_data:
+        domain_data["surf_weights"] = await async_load_surf_weights(hass)
 
     effective = {**entry.data, **entry.options}
     scan_interval = effective.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL)
@@ -74,6 +76,7 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         if not other_loaded:
             domain_data.pop("rate_limiter", None)
             domain_data.pop("thresholds", None)
+            domain_data.pop("surf_weights", None)
         if not domain_data:
             hass.data.pop(DOMAIN, None)
     return unload_ok

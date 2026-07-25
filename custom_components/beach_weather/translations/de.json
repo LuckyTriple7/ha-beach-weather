@@ -7,7 +7,8 @@
         "data": {
           "name": "Name",
           "location": "Koordinaten (manuell oder auf der Karte wählen)",
-          "scan_interval": "Abfrageintervall (Sekunden, min. 300)"
+          "scan_interval": "Abfrageintervall (Sekunden, min. 300)",
+          "beach_orientation": "Strandausrichtung (° Kompass, seewärts)"
         }
       }
     },
@@ -23,7 +24,8 @@
       "init": {
         "menu_options": {
           "location": "Standort & Abfrageintervall",
-          "thresholds": "Schwellwerte Badebedingungen (alle Standorte)"
+          "thresholds": "Schwellwerte Badebedingungen (alle Standorte)",
+          "surf_weights": "Surf-Score Gewichtung (alle Standorte)"
         }
       },
       "location": {
@@ -31,7 +33,8 @@
         "description": "Koordinaten oder Abfrageintervall anpassen.",
         "data": {
           "location": "Koordinaten",
-          "scan_interval": "Abfrageintervall (Sekunden, min. 300)"
+          "scan_interval": "Abfrageintervall (Sekunden, min. 300)",
+          "beach_orientation": "Strandausrichtung (° Kompass, seewärts)"
         }
       },
       "thresholds": {
@@ -44,6 +47,18 @@
           "perfect_temp_min": "Perfekte Wassertemperatur über (°C)",
           "perfect_period_min": "Perfekte Wellenperiode über (s)",
           "very_good_temp_min": "Sehr gute Wassertemperatur über (°C)"
+        }
+      },
+      "surf_weights": {
+        "title": "Surf-Score Gewichtung",
+        "description": "Gilt für alle Standorte, nicht nur diesen. Die Gewichte müssen sich nicht auf 100 summieren — werden automatisch normalisiert.",
+        "data": {
+          "weight_wave_period": "Wellenperiode",
+          "weight_wave_height": "Wellenhöhe",
+          "weight_swell_direction": "Dünungsrichtung",
+          "weight_wind_direction": "Windrichtung",
+          "weight_wind_speed": "Windgeschwindigkeit",
+          "weight_water_temperature": "Wassertemperatur"
         }
       }
     }
@@ -109,7 +124,20 @@
       },
       "location": { "name": "Standort" },
       "last_status": { "name": "Marine-API-Status" },
-      "last_status_wind": { "name": "Wetter-API-Status" }
+      "last_status_wind": { "name": "Wetter-API-Status" },
+      "surf_score": { "name": "Surf-Score" },
+      "surf_condition": {
+        "name": "Surf-Bedingungen",
+        "state": {
+          "no_surf": "🚫 Kein Surf möglich",
+          "poor": "🔴 Schlecht",
+          "okay": "🟡 Okay",
+          "good": "🟢 Gut",
+          "very_good": "🟢 Sehr gut",
+          "perfect": "🔥 Perfekte Bedingungen"
+        }
+      },
+      "surf_stars": { "name": "Surf-Sterne" }
     },
     "button": {
       "update_now": { "name": "Jetzt aktualisieren" }

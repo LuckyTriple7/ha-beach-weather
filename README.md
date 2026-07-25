@@ -27,6 +27,7 @@ Home Assistant custom integration for beach and water conditions (water temperat
 1. **Settings → Devices & Services → Add Integration → Beach Weather**
 2. Enter a name (e.g. "Platja de Muro") and the location — either type coordinates directly or pick them on the map widget
 3. Optionally adjust the polling interval (min. 300s)
+4. Set the **beach orientation** (° compass, seaward) — used by the Surf Score to judge whether wind/swell direction is favorable
 
 Add the integration again for each additional location.
 
@@ -53,12 +54,30 @@ One HA device per location, named after the location. All entity IDs include a s
 | `sensor.last_status_platja_de_muro` | Last raw HTTP status code from the Marine API (diagnostic) |
 | `sensor.last_status_wind_platja_de_muro` | Last raw HTTP status code from the Forecast/Wind API (diagnostic) |
 | `button.update_now_platja_de_muro` | Forces an immediate refresh of both APIs for this location — bypasses the shared rate limiter and any active error backoff |
+| `sensor.surf_score_platja_de_muro` | Surf quality, 0-100 |
+| `sensor.surf_condition_platja_de_muro` | Surf quality as a category (No surf / Poor / Okay / Good / Very good / Perfect conditions) |
+| `sensor.surf_stars_platja_de_muro` | Surf quality as star rating (★ to ★★★★★), with the numeric score and star count as attributes |
 
 A sensor becomes `unavailable` when Open-Meteo doesn't return a value for that field, or when the request fails. The two "Last Status" sensors are the exception — they stay visible even after a failed update, showing the raw status code (e.g. `403`) so a rate-limit issue is diagnosable without digging through the log.
 
 ## Bathing condition thresholds
 
 The Bathing Conditions sensor's thresholds (too-cold cutoff, calm/moderate wave height, perfect/very-good water temperature, perfect wave period) are **global across all locations**, not per-location. Adjust them via **Settings → Devices & Services → Beach Weather → Configure** (on any location) → **Bathing condition thresholds** — rendered as sliders. Changes apply to every location's Bathing Conditions sensor immediately, no restart needed.
+
+## Surf Score
+
+`sensor.surf_score` blends six factors into a single 0-100 quality score, each scored on its own curve (not linear) and combined via **global, user-adjustable weights** (Settings → Devices & Services → Beach Weather → Configure → **Surf score weighting**):
+
+| Factor | Default weight | What's rewarded |
+|--------|-----------------|------------------|
+| Wave period | 30% | 10-14s ideal; very short periods (wind chop) score near 0 |
+| Wave height | 20% | 0.8-1.5m ideal; too flat or too big scores lower |
+| Swell direction | 20% | How closely swell direction matches the beach orientation |
+| Wind direction | 15% | How closely wind direction matches the beach orientation |
+| Wind speed | 10% | Calmer is better; 0-10 km/h ideal |
+| Water temperature | 5% | 20-24°C ideal |
+
+Weights don't need to add up to 100 — they're normalized by their sum automatically. Two bonuses (+10 each, stacking, total capped at 100): swell hits the beach head-on *and* wind blows offshore; or wave period > 10s *and* wave height > 0.8m. Direction scoring needs each location's **beach orientation** (set during setup or via Configure → Location); without it, the direction sub-scores default to comparing against 0°, which will usually be wrong for that beach.
 
 ## Error handling & backoff
 

@@ -5,15 +5,18 @@ from homeassistant.data_entry_flow import FlowResultType
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.beach_weather.const import (
+    CONF_BEACH_ORIENTATION,
     CONF_LATITUDE,
     CONF_LOCATION,
     CONF_LONGITUDE,
     CONF_NAME,
     CONF_SCAN_INTERVAL,
     CONF_SLUG,
+    DEFAULT_SURF_WEIGHTS,
     DEFAULT_THRESHOLDS,
     DOMAIN,
     KEY_TOO_COLD_MAX,
+    KEY_WEIGHT_WAVE_PERIOD,
 )
 
 LOCATION_INPUT = {"latitude": 39.8, "longitude": 3.11}
@@ -47,6 +50,7 @@ class TestConfigFlow:
                 CONF_NAME: "Platja de Muro",
                 CONF_LOCATION: LOCATION_INPUT,
                 CONF_SCAN_INTERVAL: 900,
+                CONF_BEACH_ORIENTATION: 340,
             },
         )
         assert result["type"] == FlowResultType.CREATE_ENTRY
@@ -54,6 +58,7 @@ class TestConfigFlow:
         assert result["data"][CONF_SLUG] == "platja_de_muro"
         assert result["data"][CONF_LATITUDE] == LOCATION_INPUT["latitude"]
         assert result["data"][CONF_LONGITUDE] == LOCATION_INPUT["longitude"]
+        assert result["data"][CONF_BEACH_ORIENTATION] == 340
 
     async def test_empty_name_shows_error(self, hass):
         result = await hass.config_entries.flow.async_init(
@@ -107,7 +112,7 @@ class TestOptionsFlow:
         entry = self._make_entry(hass)
         result = await hass.config_entries.options.async_init(entry.entry_id)
         assert result["type"] == FlowResultType.MENU
-        assert set(result["menu_options"]) == {"location", "thresholds"}
+        assert set(result["menu_options"]) == {"location", "thresholds", "surf_weights"}
 
     async def test_thresholds_step_saves_and_dispatches(self, hass):
         entry = self._make_entry(hass)
@@ -126,3 +131,44 @@ class TestOptionsFlow:
         )
         assert result["type"] == FlowResultType.CREATE_ENTRY
         assert hass.data[DOMAIN]["thresholds"][KEY_TOO_COLD_MAX] == 20.0
+
+    async def test_surf_weights_step_saves_and_dispatches(self, hass):
+        entry = self._make_entry(hass)
+        hass.data.setdefault(DOMAIN, {})["surf_weights"] = dict(DEFAULT_SURF_WEIGHTS)
+
+        result = await hass.config_entries.options.async_init(entry.entry_id)
+        result = await hass.config_entries.options.async_configure(
+            result["flow_id"], {"next_step_id": "surf_weights"}
+        )
+        assert result["type"] == FlowResultType.FORM
+        assert result["step_id"] == "surf_weights"
+
+        new_values = {**DEFAULT_SURF_WEIGHTS, KEY_WEIGHT_WAVE_PERIOD: 50.0}
+        result = await hass.config_entries.options.async_configure(
+            result["flow_id"], new_values
+        )
+        assert result["type"] == FlowResultType.CREATE_ENTRY
+        assert hass.data[DOMAIN]["surf_weights"][KEY_WEIGHT_WAVE_PERIOD] == 50.0
+
+    async def test_location_step_flattens_coordinates_into_options(self, hass):
+        entry = self._make_entry(hass)
+
+        result = await hass.config_entries.options.async_init(entry.entry_id)
+        result = await hass.config_entries.options.async_configure(
+            result["flow_id"], {"next_step_id": "location"}
+        )
+        assert result["step_id"] == "location"
+
+        new_location = {"latitude": 40.0, "longitude": 4.0}
+        result = await hass.config_entries.options.async_configure(
+            result["flow_id"],
+            {
+                CONF_LOCATION: new_location,
+                CONF_SCAN_INTERVAL: 900,
+                CONF_BEACH_ORIENTATION: 200,
+            },
+        )
+        assert result["type"] == FlowResultType.CREATE_ENTRY
+        assert result["data"][CONF_LATITUDE] == 40.0
+        assert result["data"][CONF_LONGITUDE] == 4.0
+        assert CONF_LOCATION not in result["data"]
