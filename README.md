@@ -91,6 +91,8 @@ The Bathing Conditions sensor's thresholds (too-cold cutoff, calm/moderate wave 
 
 Weights don't need to add up to 100 — they're normalized by their sum automatically. Two bonuses (+10 each, stacking, total capped at 100): swell hits the beach head-on *and* wind blows offshore; or wave period > 10s *and* wave height > 0.8m. Direction scoring needs each location's **beach orientation** (set during setup or via Configure → Location); without it, the direction sub-scores default to comparing against 0°, which will usually be wrong for that beach.
 
+`sensor.surf_score`'s attributes break down exactly how the number was reached: each factor's own 0-100 sub-score (`wave_period_score`, `wave_height_score`, `swell_direction_score`, `wind_direction_score`, `wind_speed_score`, `water_temperature_score`), the weights actually used, both direction diffs in degrees, which of the two bonuses fired, and the weighted average before bonuses were added.
+
 ## Error handling & backoff
 
 If a request fails, the affected sensors go `unavailable` until the next successful update; other locations/APIs are unaffected. On HTTP 403 the coordinator backs off for 30 minutes, on 429 for 15 minutes, on other HTTP errors for 5 minutes, before it even attempts another request — this protects against repeatedly hammering an already-blocking Open-Meteo endpoint. The **Update Now** button ignores this backoff and the shared rate limiter entirely: pressing it always fires an immediate request, since a deliberate manual action should not be silently swallowed by the automatic burst protection.

@@ -1,8 +1,16 @@
 """Tests for the Surf Score calculation (pure functions, no HA scaffolding)."""
-from custom_components.beach_weather.const import DEFAULT_SURF_WEIGHTS
+import pytest
+
+from custom_components.beach_weather.const import (
+    DEFAULT_SURF_WEIGHTS,
+    KEY_WEIGHT_WATER_TEMPERATURE,
+    KEY_WEIGHT_WAVE_HEIGHT,
+    KEY_WEIGHT_WAVE_PERIOD,
+)
 from custom_components.beach_weather.surf import (
     angular_diff,
     calculate_surf_score,
+    calculate_surf_score_details,
     score_direction_diff,
     score_wave_height,
     score_wave_period,
@@ -130,3 +138,40 @@ class TestCalculateSurfScore:
         equal_weights = {key: 1.0 for key in DEFAULT_SURF_WEIGHTS}
         score = self._score(weights=equal_weights)
         assert 0 <= score <= 100
+
+
+class TestCalculateSurfScoreDetails:
+    def test_matches_calculate_surf_score(self):
+        params = {
+            "wave_period": 9.0,
+            "wave_height": 1.0,
+            "swell_direction": 340.0,
+            "wind_direction": 160.0,
+            "wind_speed": 10.0,
+            "water_temperature": 22.0,
+            "beach_orientation": 340.0,
+            "weights": DEFAULT_SURF_WEIGHTS,
+        }
+        assert calculate_surf_score_details(**params)["score"] == calculate_surf_score(**params)
+
+    def test_breakdown_reflects_sub_scores_and_bonuses(self):
+        details = calculate_surf_score_details(
+            wave_period=12.0,
+            wave_height=1.2,
+            swell_direction=340.0,
+            wind_direction=160.0,  # ~180° off beach orientation -> offshore
+            wind_speed=10.0,
+            water_temperature=22.0,
+            beach_orientation=340.0,
+            weights=DEFAULT_SURF_WEIGHTS,
+        )
+        assert details["sub_scores"][KEY_WEIGHT_WAVE_PERIOD] == 100
+        assert details["sub_scores"][KEY_WEIGHT_WAVE_HEIGHT] == 100
+        assert details["sub_scores"][KEY_WEIGHT_WATER_TEMPERATURE] == 100
+        assert details["swell_direction_diff"] == 0
+        assert details["wind_direction_diff"] == pytest.approx(180, abs=0.01)
+        assert details["bonus_frontal_offshore"] is True
+        assert details["bonus_long_period_swell"] is True
+        assert details["bonus_points"] == 20
+        assert details["weights_used"] == DEFAULT_SURF_WEIGHTS
+        assert details["score"] == 100

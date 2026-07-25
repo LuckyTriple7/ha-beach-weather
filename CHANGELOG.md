@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.11.0] - 2026-07-25
+### Added
+- `sensor.surf_score` now exposes a full breakdown as attributes: each factor's own sub-score, the weights used, both direction diffs, which bonuses fired, and the pre-bonus weighted average — the 0-100 number is no longer a black box
+
 ## [0.10.1] - 2026-07-25
 ### Fixed
 - Pasting coordinates/a place name into the new location form never worked in practice: the Name field was marked Required, and the frontend blocks submitting a form with an empty Required field before the integration's own code runs — so the paste/search never fired unless a name was also typed first, defeating the point. Name is now Optional at the schema level (still enforced server-side before an entry is actually created).

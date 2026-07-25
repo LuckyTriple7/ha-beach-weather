@@ -67,6 +67,12 @@ from .const import (
     KEY_WAVE_HEIGHT,
     KEY_WAVE_PERIOD,
     KEY_WEATHER_CONDITION,
+    KEY_WEIGHT_SWELL_DIRECTION,
+    KEY_WEIGHT_WATER_TEMPERATURE,
+    KEY_WEIGHT_WAVE_HEIGHT,
+    KEY_WEIGHT_WAVE_PERIOD,
+    KEY_WEIGHT_WIND_DIRECTION,
+    KEY_WEIGHT_WIND_SPEED,
     KEY_WIND_DIRECTION,
     KEY_WIND_GUSTS,
     KEY_WIND_SPEED,
@@ -76,7 +82,7 @@ from .const import (
     WMO_CONDITIONS,
 )
 from .coordinator import ForecastCoordinator, MarineCoordinator
-from .surf import calculate_surf_score, surf_condition_for_score, surf_stars_for_score
+from .surf import calculate_surf_score_details, surf_condition_for_score, surf_stars_for_score
 
 
 async def async_setup_entry(
@@ -810,7 +816,7 @@ class _SurfSensorBase(SensorEntity):
         self.async_write_ha_state()
 
     @property
-    def _score(self) -> float | None:
+    def _details(self) -> dict | None:
         if not self._marine.last_update_success or not self._marine.data:
             return None
         if not self._forecast.last_update_success or not self._forecast.data:
@@ -832,7 +838,7 @@ class _SurfSensorBase(SensorEntity):
         effective = {**self._entry.data, **self._entry.options}
         orientation = effective.get(CONF_BEACH_ORIENTATION, DEFAULT_BEACH_ORIENTATION)
 
-        return calculate_surf_score(
+        return calculate_surf_score_details(
             wave_period=m["wave_period"],
             wave_height=m["wave_height"],
             swell_direction=m["swell_wave_direction"],
@@ -842,6 +848,11 @@ class _SurfSensorBase(SensorEntity):
             beach_orientation=orientation,
             weights=weights,
         )
+
+    @property
+    def _score(self) -> float | None:
+        details = self._details
+        return details["score"] if details is not None else None
 
     @property
     def available(self) -> bool:
@@ -861,6 +872,28 @@ class SurfScoreSensor(_SurfSensorBase):
     def native_value(self) -> int | None:
         score = self._score
         return round(score) if score is not None else None
+
+    @property
+    def extra_state_attributes(self) -> dict:
+        details = self._details
+        if details is None:
+            return {}
+        sub_scores = details["sub_scores"]
+        return {
+            "wave_period_score": sub_scores[KEY_WEIGHT_WAVE_PERIOD],
+            "wave_height_score": sub_scores[KEY_WEIGHT_WAVE_HEIGHT],
+            "swell_direction_score": sub_scores[KEY_WEIGHT_SWELL_DIRECTION],
+            "wind_direction_score": sub_scores[KEY_WEIGHT_WIND_DIRECTION],
+            "wind_speed_score": sub_scores[KEY_WEIGHT_WIND_SPEED],
+            "water_temperature_score": sub_scores[KEY_WEIGHT_WATER_TEMPERATURE],
+            "weights_used": details["weights_used"],
+            "swell_direction_diff": details["swell_direction_diff"],
+            "wind_direction_diff": details["wind_direction_diff"],
+            "bonus_frontal_offshore": details["bonus_frontal_offshore"],
+            "bonus_long_period_swell": details["bonus_long_period_swell"],
+            "bonus_points": details["bonus_points"],
+            "weighted_average_before_bonus": details["weighted_average_before_bonus"],
+        }
 
 
 class SurfConditionSensor(_SurfSensorBase):

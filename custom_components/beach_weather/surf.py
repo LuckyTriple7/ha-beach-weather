@@ -118,6 +118,58 @@ def surf_stars_for_score(score: float) -> int:
     return 5
 
 
+def calculate_surf_score_details(
+    *,
+    wave_period: float,
+    wave_height: float,
+    swell_direction: float,
+    wind_direction: float,
+    wind_speed: float,
+    water_temperature: float,
+    beach_orientation: float,
+    weights: dict[str, float],
+) -> dict:
+    """Full breakdown of the surf score — sub-scores, weights, direction
+    diffs and which bonuses fired — so it can be exposed as sensor
+    attributes and the number 0-100 isn't a black box."""
+    swell_diff = angular_diff(swell_direction, beach_orientation)
+    wind_diff = angular_diff(wind_direction, beach_orientation)
+
+    sub_scores = {
+        KEY_WEIGHT_WAVE_PERIOD: score_wave_period(wave_period),
+        KEY_WEIGHT_WAVE_HEIGHT: score_wave_height(wave_height),
+        KEY_WEIGHT_SWELL_DIRECTION: score_direction_diff(swell_diff),
+        KEY_WEIGHT_WIND_DIRECTION: score_direction_diff(wind_diff),
+        KEY_WEIGHT_WIND_SPEED: score_wind_speed(wind_speed),
+        KEY_WEIGHT_WATER_TEMPERATURE: score_water_temperature(water_temperature),
+    }
+
+    total_weight = sum(weights.get(key, 0) for key in sub_scores) or 1
+    weighted_avg = (
+        sum(sub_scores[key] * weights.get(key, 0) for key in sub_scores) / total_weight
+    )
+
+    bonus_frontal_offshore = (
+        swell_diff <= _FRONTAL_SWELL_DIFF_MAX and wind_diff > _OFFSHORE_WIND_DIFF_MIN
+    )
+    bonus_long_period_swell = wave_period > _LONG_PERIOD_MIN and wave_height > _SIZABLE_HEIGHT_MIN
+    bonus_points = (_BONUS_POINTS if bonus_frontal_offshore else 0) + (
+        _BONUS_POINTS if bonus_long_period_swell else 0
+    )
+
+    return {
+        "score": min(100.0, weighted_avg + bonus_points),
+        "weighted_average_before_bonus": round(weighted_avg, 1),
+        "sub_scores": sub_scores,
+        "weights_used": dict(weights),
+        "swell_direction_diff": round(swell_diff, 1),
+        "wind_direction_diff": round(wind_diff, 1),
+        "bonus_frontal_offshore": bonus_frontal_offshore,
+        "bonus_long_period_swell": bonus_long_period_swell,
+        "bonus_points": bonus_points,
+    }
+
+
 def calculate_surf_score(
     *,
     wave_period: float,
@@ -129,25 +181,13 @@ def calculate_surf_score(
     beach_orientation: float,
     weights: dict[str, float],
 ) -> float:
-    swell_diff = angular_diff(swell_direction, beach_orientation)
-    wind_diff = angular_diff(wind_direction, beach_orientation)
-
-    scores = {
-        KEY_WEIGHT_WAVE_PERIOD: score_wave_period(wave_period),
-        KEY_WEIGHT_WAVE_HEIGHT: score_wave_height(wave_height),
-        KEY_WEIGHT_SWELL_DIRECTION: score_direction_diff(swell_diff),
-        KEY_WEIGHT_WIND_DIRECTION: score_direction_diff(wind_diff),
-        KEY_WEIGHT_WIND_SPEED: score_wind_speed(wind_speed),
-        KEY_WEIGHT_WATER_TEMPERATURE: score_water_temperature(water_temperature),
-    }
-
-    total_weight = sum(weights.get(key, 0) for key in scores) or 1
-    weighted_avg = sum(scores[key] * weights.get(key, 0) for key in scores) / total_weight
-
-    bonus = 0.0
-    if swell_diff <= _FRONTAL_SWELL_DIFF_MAX and wind_diff > _OFFSHORE_WIND_DIFF_MIN:
-        bonus += _BONUS_POINTS
-    if wave_period > _LONG_PERIOD_MIN and wave_height > _SIZABLE_HEIGHT_MIN:
-        bonus += _BONUS_POINTS
-
-    return min(100.0, weighted_avg + bonus)
+    return calculate_surf_score_details(
+        wave_period=wave_period,
+        wave_height=wave_height,
+        swell_direction=swell_direction,
+        wind_direction=wind_direction,
+        wind_speed=wind_speed,
+        water_temperature=water_temperature,
+        beach_orientation=beach_orientation,
+        weights=weights,
+    )["score"]
