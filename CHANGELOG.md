@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.8.0] - 2026-07-25
+### Added
+- "Paste coordinates" field when adding/editing a location: paste a "lat, lon" pair (e.g. copied from Google Maps) and submit to auto-fill the map, plus a suggested name (Nominatim reverse geocoding) and beach orientation (nearest OSM coastline segment, Overpass) — all pre-filled for review, nothing is saved until you confirm
+
 ## [0.7.0] - 2026-07-25
 ### Added
 - Surf Score: three new sensors (`sensor.surf_score`, `sensor.surf_condition`, `sensor.surf_stars`) computing a 0-100 surf quality score from wave period/height, swell/wind direction alignment, wind speed and water temperature, weighted and combined into a category and star rating. Weights are global across all locations, adjustable via sliders in Configure → "Surf score weighting"

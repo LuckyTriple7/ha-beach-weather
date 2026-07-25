@@ -5,21 +5,29 @@
         "title": "New Location",
         "description": "Add a location for beach/water conditions.",
         "data": {
+          "coordinates_paste": "Paste coordinates (optional)",
           "name": "Name",
           "location": "Coordinates (enter manually or pick on the map)",
           "scan_interval": "Poll interval (seconds, min. 300)",
           "beach_orientation": "Beach orientation (° compass, seaward)"
+        },
+        "data_description": {
+          "coordinates_paste": "Paste a \"lat, lon\" pair (e.g. copied from Google Maps) and submit to auto-fill the map, name and beach orientation below for review — leave empty to fill everything in manually."
         }
       }
     },
     "error": {
-      "invalid_name": "Please enter a name."
+      "invalid_name": "Please enter a name.",
+      "invalid_coordinates": "Couldn't parse that as \"lat, lon\" — expected something like 27.787, -15.723."
     },
     "abort": {
       "already_configured": "This location is already configured."
     }
   },
   "options": {
+    "error": {
+      "invalid_coordinates": "Couldn't parse that as \"lat, lon\" — expected something like 27.787, -15.723."
+    },
     "step": {
       "init": {
         "menu_options": {
@@ -32,9 +40,13 @@
         "title": "Location",
         "description": "Adjust coordinates or poll interval.",
         "data": {
+          "coordinates_paste": "Paste coordinates (optional)",
           "location": "Coordinates",
           "scan_interval": "Poll interval (seconds, min. 300)",
           "beach_orientation": "Beach orientation (° compass, seaward)"
+        },
+        "data_description": {
+          "coordinates_paste": "Paste a \"lat, lon\" pair and submit to auto-fill the map and beach orientation below for review — leave empty to adjust manually."
         }
       },
       "thresholds": {

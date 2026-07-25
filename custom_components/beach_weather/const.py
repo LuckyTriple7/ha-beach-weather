@@ -3,6 +3,7 @@ DOMAIN = "beach_weather"
 CONF_NAME = "name"
 CONF_SLUG = "slug"  # frozen at creation, never recomputed from a live name
 CONF_LOCATION = "location"  # transient config-flow field (LocationSelector dict)
+CONF_COORDINATES_PASTE = "coordinates_paste"  # transient config-flow field
 CONF_LATITUDE = "latitude"
 CONF_LONGITUDE = "longitude"
 CONF_SCAN_INTERVAL = "scan_interval"

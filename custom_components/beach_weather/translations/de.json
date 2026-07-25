@@ -5,21 +5,29 @@
         "title": "Neuer Standort",
         "description": "Standort für Strandbedingungen hinzufügen.",
         "data": {
+          "coordinates_paste": "Koordinaten einfügen (optional)",
           "name": "Name",
           "location": "Koordinaten (manuell oder auf der Karte wählen)",
           "scan_interval": "Abfrageintervall (Sekunden, min. 300)",
           "beach_orientation": "Strandausrichtung (° Kompass, seewärts)"
+        },
+        "data_description": {
+          "coordinates_paste": "Ein \"lat, lon\"-Paar einfügen (z.B. aus Google Maps kopiert) und absenden, um Karte, Name und Strandausrichtung unten automatisch zu befüllen — zur Kontrolle, nicht bindend. Leer lassen für manuelle Eingabe."
         }
       }
     },
     "error": {
-      "invalid_name": "Bitte einen Namen eingeben."
+      "invalid_name": "Bitte einen Namen eingeben.",
+      "invalid_coordinates": "Konnte nicht als \"lat, lon\" gelesen werden — erwartet z.B. 27.787, -15.723."
     },
     "abort": {
       "already_configured": "Dieser Standort ist bereits konfiguriert."
     }
   },
   "options": {
+    "error": {
+      "invalid_coordinates": "Konnte nicht als \"lat, lon\" gelesen werden — erwartet z.B. 27.787, -15.723."
+    },
     "step": {
       "init": {
         "menu_options": {
@@ -32,9 +40,13 @@
         "title": "Standort",
         "description": "Koordinaten oder Abfrageintervall anpassen.",
         "data": {
+          "coordinates_paste": "Koordinaten einfügen (optional)",
           "location": "Koordinaten",
           "scan_interval": "Abfrageintervall (Sekunden, min. 300)",
           "beach_orientation": "Strandausrichtung (° Kompass, seewärts)"
+        },
+        "data_description": {
+          "coordinates_paste": "Ein \"lat, lon\"-Paar einfügen und absenden, um Karte und Strandausrichtung unten automatisch zu befüllen — zur Kontrolle. Leer lassen für manuelle Anpassung."
         }
       },
       "thresholds": {

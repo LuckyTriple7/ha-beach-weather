@@ -1,4 +1,6 @@
 """Tests for the Beach Weather config flow."""
+from unittest.mock import AsyncMock, patch
+
 import pytest
 from homeassistant import config_entries
 from homeassistant.data_entry_flow import FlowResultType
@@ -6,6 +8,7 @@ from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.beach_weather.const import (
     CONF_BEACH_ORIENTATION,
+    CONF_COORDINATES_PASTE,
     CONF_LATITUDE,
     CONF_LOCATION,
     CONF_LONGITUDE,
@@ -92,6 +95,69 @@ class TestConfigFlow:
         assert result["type"] == FlowResultType.ABORT
         assert result["reason"] == "already_configured"
 
+    async def test_paste_coordinates_reflows_without_creating_entry(self, hass):
+        result = await hass.config_entries.flow.async_init(
+            DOMAIN, context={"source": config_entries.SOURCE_USER}
+        )
+        with (
+            patch(
+                "custom_components.beach_weather.config_flow.async_suggest_name",
+                new_callable=AsyncMock,
+                return_value="Suggested Beach",
+            ),
+            patch(
+                "custom_components.beach_weather.config_flow.async_suggest_orientation",
+                new_callable=AsyncMock,
+                return_value=123,
+            ),
+        ):
+            result = await hass.config_entries.flow.async_configure(
+                result["flow_id"],
+                {
+                    CONF_COORDINATES_PASTE: "27.787333, -15.723408",
+                    CONF_NAME: "",
+                    CONF_LOCATION: LOCATION_INPUT,
+                    CONF_SCAN_INTERVAL: 900,
+                    CONF_BEACH_ORIENTATION: 0,
+                },
+            )
+        assert result["type"] == FlowResultType.FORM
+        assert result["step_id"] == "user"
+        assert not result["errors"]
+
+        # Second submission (paste left empty this time) actually creates it,
+        # using the reviewed/confirmed values.
+        result = await hass.config_entries.flow.async_configure(
+            result["flow_id"],
+            {
+                CONF_NAME: "Suggested Beach",
+                CONF_LOCATION: {"latitude": 27.787333, "longitude": -15.723408},
+                CONF_SCAN_INTERVAL: 900,
+                CONF_BEACH_ORIENTATION: 123,
+            },
+        )
+        assert result["type"] == FlowResultType.CREATE_ENTRY
+        assert result["data"][CONF_LATITUDE] == 27.787333
+        assert result["data"][CONF_LONGITUDE] == -15.723408
+        assert result["data"][CONF_BEACH_ORIENTATION] == 123
+
+    async def test_paste_invalid_coordinates_shows_error(self, hass):
+        result = await hass.config_entries.flow.async_init(
+            DOMAIN, context={"source": config_entries.SOURCE_USER}
+        )
+        result = await hass.config_entries.flow.async_configure(
+            result["flow_id"],
+            {
+                CONF_COORDINATES_PASTE: "not coordinates",
+                CONF_NAME: "",
+                CONF_LOCATION: LOCATION_INPUT,
+                CONF_SCAN_INTERVAL: 900,
+                CONF_BEACH_ORIENTATION: 0,
+            },
+        )
+        assert result["type"] == FlowResultType.FORM
+        assert result["errors"][CONF_COORDINATES_PASTE] == "invalid_coordinates"
+
 
 class TestOptionsFlow:
     def _make_entry(self, hass):
@@ -172,3 +238,35 @@ class TestOptionsFlow:
         assert result["data"][CONF_LATITUDE] == 40.0
         assert result["data"][CONF_LONGITUDE] == 4.0
         assert CONF_LOCATION not in result["data"]
+
+    async def test_location_step_paste_reflows_without_saving(self, hass):
+        entry = self._make_entry(hass)
+
+        result = await hass.config_entries.options.async_init(entry.entry_id)
+        result = await hass.config_entries.options.async_configure(
+            result["flow_id"], {"next_step_id": "location"}
+        )
+
+        with (
+            patch(
+                "custom_components.beach_weather.config_flow.async_suggest_name",
+                new_callable=AsyncMock,
+            ) as mock_name,
+            patch(
+                "custom_components.beach_weather.config_flow.async_suggest_orientation",
+                new_callable=AsyncMock,
+                return_value=200,
+            ),
+        ):
+            result = await hass.config_entries.options.async_configure(
+                result["flow_id"],
+                {
+                    CONF_COORDINATES_PASTE: "40.0, 4.0",
+                    CONF_LOCATION: {"latitude": 39.8, "longitude": 3.11},
+                    CONF_SCAN_INTERVAL: 900,
+                    CONF_BEACH_ORIENTATION: 0,
+                },
+            )
+        assert result["type"] == FlowResultType.FORM
+        assert result["step_id"] == "location"
+        mock_name.assert_not_called()  # no name field on this step
