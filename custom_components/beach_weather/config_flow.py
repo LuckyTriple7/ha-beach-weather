@@ -91,7 +91,13 @@ class BeachWeatherConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         return vol.Schema(
             {
                 vol.Optional(CONF_COORDINATES_PASTE, default=""): str,
-                vol.Required(CONF_NAME, default=self._prefill.get(CONF_NAME, "")): str,
+                # Optional (not Required) on purpose: this stays empty on the
+                # first paste/search submission, and the frontend hard-blocks
+                # submitting a Required field with an empty default before
+                # our code ever runs. Emptiness is still enforced server-side
+                # (see the "invalid_name" check below) before an entry is
+                # actually created.
+                vol.Optional(CONF_NAME, default=self._prefill.get(CONF_NAME, "")): str,
                 vol.Required(
                     CONF_LOCATION,
                     default=self._prefill.get(

@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.10.1] - 2026-07-25
+### Fixed
+- Pasting coordinates/a place name into the new location form never worked in practice: the Name field was marked Required, and the frontend blocks submitting a form with an empty Required field before the integration's own code runs — so the paste/search never fired unless a name was also typed first, defeating the point. Name is now Optional at the schema level (still enforced server-side before an entry is actually created).
+
 ## [0.10.0] - 2026-07-25
 ### Added
 - 8 new sensors per location, all from data already covered by the existing API calls (no extra requests): wave direction, humidity, precipitation, rain, showers, pressure, cloud cover, UV index, and day/night
