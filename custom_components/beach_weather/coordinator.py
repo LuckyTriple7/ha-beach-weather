@@ -25,6 +25,7 @@ from .const import (
     FORECAST_HOURLY_PARAMS,
     MARINE_API_URL,
     MARINE_CURRENT_PARAMS,
+    MARINE_HOURLY_PARAMS,
 )
 from .ratelimiter import OpenMeteoRateLimiter
 
@@ -165,6 +166,7 @@ class MarineCoordinator(OpenMeteoCoordinatorBase):
     API_NAME = "marine"
     API_URL = MARINE_API_URL
     CURRENT_PARAMS = MARINE_CURRENT_PARAMS
+    HOURLY_PARAMS = MARINE_HOURLY_PARAMS
 
 
 class ForecastCoordinator(OpenMeteoCoordinatorBase):

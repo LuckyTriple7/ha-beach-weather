@@ -2,6 +2,8 @@
 fetches) and check what actually lands in the state machine — the pure-logic
 tests elsewhere don't touch entity wiring (unique_id, entity_id, available,
 translation_key) at all."""
+from datetime import datetime, timedelta, timezone
+
 import pytest
 from homeassistant.const import STATE_UNAVAILABLE
 from pytest_homeassistant_custom_component.common import MockConfigEntry
@@ -15,6 +17,7 @@ from custom_components.beach_weather.const import (
     CONF_SLUG,
     DOMAIN,
 )
+from custom_components.beach_weather.sensor import _hourly_forecast
 
 SLUG = "platja_de_muro"
 
@@ -92,6 +95,55 @@ class TestSensorSetup:
     async def test_update_now_button_exists(self, hass, mock_marine_update, mock_forecast_update):
         await _setup_entry(hass, mock_marine_update, mock_forecast_update)
         assert hass.states.get(f"button.update_now_{SLUG}") is not None
+
+    async def test_wave_height_forecast_attribute(
+        self, hass, mock_marine_update, mock_forecast_update
+    ):
+        await _setup_entry(hass, mock_marine_update, mock_forecast_update)
+        state = hass.states.get(f"sensor.wave_height_{SLUG}")
+        assert state is not None
+        forecast = state.attributes["forecast"]
+        assert forecast is not None
+        assert len(forecast) == 3
+        assert forecast[0]["value"] == 0.8
+
+    async def test_swell_period_forecast_attribute(
+        self, hass, mock_marine_update, mock_forecast_update
+    ):
+        await _setup_entry(hass, mock_marine_update, mock_forecast_update)
+        state = hass.states.get(f"sensor.swell_period_{SLUG}")
+        assert state.attributes["forecast"][0]["value"] == 9.2
+
+
+class TestHourlyForecastHelper:
+    def _hourly_block(self, hours_ahead: list[int], values: list[float]) -> dict:
+        return {
+            "time": [
+                (datetime.now(timezone.utc) + timedelta(hours=h)).strftime("%Y-%m-%dT%H:%M")
+                for h in hours_ahead
+            ],
+            "wave_height": values,
+        }
+
+    def test_returns_none_when_no_hourly_data(self):
+        assert _hourly_forecast(None, "wave_height") is None
+        assert _hourly_forecast({}, "wave_height") is None
+
+    def test_filters_out_past_timestamps(self):
+        hourly = self._hourly_block([-2, -1, 1, 2], [0.1, 0.2, 0.9, 1.0])
+        forecast = _hourly_forecast(hourly, "wave_height")
+        assert [entry["value"] for entry in forecast] == [0.9, 1.0]
+
+    def test_caps_at_requested_hours(self):
+        hourly = self._hourly_block([1, 2, 3, 4, 5], [1, 2, 3, 4, 5])
+        forecast = _hourly_forecast(hourly, "wave_height", hours=2)
+        assert len(forecast) == 2
+        assert [entry["value"] for entry in forecast] == [1, 2]
+
+    def test_skips_none_values(self):
+        hourly = self._hourly_block([1, 2, 3], [None, 0.5, None])
+        forecast = _hourly_forecast(hourly, "wave_height")
+        assert [entry["value"] for entry in forecast] == [0.5]
 
 
 class TestDiagnostics:

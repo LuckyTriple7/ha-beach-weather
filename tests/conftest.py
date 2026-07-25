@@ -1,9 +1,17 @@
 """Shared fixtures for Beach Weather tests."""
 from __future__ import annotations
 
+from datetime import datetime, timedelta, timezone
 from unittest.mock import AsyncMock, patch
 
 import pytest
+
+# Generated relative to "now" (not fixed dates) since the Marine hourly
+# forecast attribute filters out anything already in the past.
+_MARINE_HOURLY_TIMES = [
+    (datetime.now(timezone.utc) + timedelta(hours=i)).strftime("%Y-%m-%dT%H:%M")
+    for i in range(1, 4)
+]
 
 MOCK_MARINE_CURRENT = {
     "time": "2026-07-22T15:30",
@@ -14,6 +22,16 @@ MOCK_MARINE_CURRENT = {
     "swell_wave_height": 0.6,
     "swell_wave_direction": 210,
     "swell_wave_period": 9.2,
+    "_hourly": {
+        "time": _MARINE_HOURLY_TIMES,
+        "wave_height": [0.8, 0.9, 1.0],
+        "wave_direction": [39, 40, 41],
+        "wave_period": [6.3, 6.4, 6.5],
+        "sea_surface_temperature": [23.8, 23.7, 23.6],
+        "swell_wave_height": [0.6, 0.6, 0.7],
+        "swell_wave_direction": [210, 211, 212],
+        "swell_wave_period": [9.2, 9.3, 9.4],
+    },
 }
 
 MOCK_FORECAST_CURRENT = {

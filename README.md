@@ -75,6 +75,8 @@ One HA device per location, named after the location. All entity IDs include a s
 
 A sensor becomes `unavailable` when Open-Meteo doesn't return a value for that field, or when the request fails. The two "Last Status" sensors are the exception — they stay visible even after a failed update, showing the raw status code (e.g. `403`) so a rate-limit issue is diagnosable without digging through the log.
 
+The 7 Marine sensors (water temperature, wave height/direction/period, swell height/direction/period) each carry a `forecast` attribute — the next 48 hours as `[{"time": ..., "value": ...}, ...]`, `null` if no forecast data is available yet.
+
 ## Weather entity
 
 `weather.<slug>` is a standard Home Assistant weather entity — works with the built-in weather card, `weather.get_forecasts`, and anything else that expects a normal `weather.*` entity. It covers only the atmospheric side (temperature, wind, pressure, humidity, cloud cover, UV index, precipitation, condition) from the Forecast API's `current`/`hourly`/`daily` blocks — wave/swell/surf data has no place in HA's weather model and stays on the dedicated sensors above. WMO weather codes are mapped to HA's standard condition strings (`sunny`/`clear-night` for codes 0-1, day/night aware; `partlycloudy`, `cloudy`, `fog`, `rainy`, `pouring`, `snowy`, `snowy-rainy`, `lightning`, `lightning-rainy` for the rest).

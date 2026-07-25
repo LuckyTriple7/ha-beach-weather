@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.14.0] - 2026-07-25
+### Added
+- Marine coordinator now also requests an hourly forecast (wave height/direction/period, swell height/direction/period, sea surface temperature). The 7 corresponding sensors each expose a `forecast` attribute — next 48 hours as `[{"time", "value"}, ...]`, filtered to future timestamps only
+
 ## [0.13.0] - 2026-07-25
 ### Added
 - New `weather.<slug>` entity per location — standard HA weather entity (current conditions + hourly/daily forecast) for the native weather card and `weather.get_forecasts`, covering only atmospheric data from the Forecast API. Requests now also fetch `hourly`/`daily` blocks for the Forecast coordinator (Marine stays current-only)

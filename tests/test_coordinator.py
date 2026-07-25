@@ -61,7 +61,7 @@ class TestOpenMeteoCoordinatorBase:
         coordinator._session = session
 
         data = await coordinator._async_update_data()
-        assert data == {"wave_height": 0.5}
+        assert data["wave_height"] == 0.5
 
     async def test_403_raises_update_failed_and_sets_backoff(self, hass):
         entry = _make_entry(hass)
@@ -140,7 +140,7 @@ class TestAsyncForceRefresh:
 
         await coordinator.async_force_refresh()
         session.get.assert_called_once()
-        assert coordinator.data == {"wave_height": 0.5}
+        assert coordinator.data["wave_height"] == 0.5
         assert coordinator._backoff_until is None
 
     async def test_bypasses_rate_limiter_spacing(self, hass):

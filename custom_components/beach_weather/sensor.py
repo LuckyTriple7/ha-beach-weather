@@ -36,6 +36,7 @@ from .const import (
     DEFAULT_WMO_CONDITION,
     DOMAIN,
     IS_DAY_OPTIONS,
+    MARINE_FORECAST_HOURS,
     KEY_AIR_TEMPERATURE,
     KEY_BATHING_CONDITIONS,
     KEY_CALM_WAVE_MAX,
@@ -149,6 +150,25 @@ def _parse_open_meteo_time(raw: str | None) -> datetime | None:
         return None
 
 
+def _hourly_forecast(hourly: dict | None, field: str, *, hours: int = MARINE_FORECAST_HOURS) -> list[dict] | None:
+    """Next `hours` of a Marine hourly field, as [{"time": ..., "value": ...}],
+    skipping any timestamps already in the past. None if no hourly data."""
+    if not hourly:
+        return None
+    times = hourly.get("time") or []
+    values = hourly.get(field) or []
+    now = datetime.now(timezone.utc)
+    result: list[dict] = []
+    for raw_time, value in zip(times, values):
+        dt = _parse_open_meteo_time(raw_time)
+        if dt is None or dt < now or value is None:
+            continue
+        result.append({"time": raw_time, "value": value})
+        if len(result) >= hours:
+            break
+    return result or None
+
+
 class _BeachWeatherSensorBase(CoordinatorEntity, SensorEntity):
     _attr_has_entity_name = True
 
@@ -187,7 +207,12 @@ class WaterTemperatureSensor(_BeachWeatherSensorBase):
     def extra_state_attributes(self) -> dict:
         if not self.available:
             return {}
-        return {"time": self.coordinator.data.get("time")}
+        return {
+            "time": self.coordinator.data.get("time"),
+            "forecast": _hourly_forecast(
+                self.coordinator.data.get("_hourly"), "sea_surface_temperature"
+            ),
+        }
 
 
 class WaveHeightSensor(_BeachWeatherSensorBase):
@@ -212,7 +237,10 @@ class WaveHeightSensor(_BeachWeatherSensorBase):
     def extra_state_attributes(self) -> dict:
         if not self.available:
             return {}
-        return {"time": self.coordinator.data.get("time")}
+        return {
+            "time": self.coordinator.data.get("time"),
+            "forecast": _hourly_forecast(self.coordinator.data.get("_hourly"), "wave_height"),
+        }
 
 
 class WaveDirectionSensor(_BeachWeatherSensorBase):
@@ -233,6 +261,12 @@ class WaveDirectionSensor(_BeachWeatherSensorBase):
             return None
         return round(self.coordinator.data["wave_direction"])
 
+    @property
+    def extra_state_attributes(self) -> dict:
+        if not self.available:
+            return {}
+        return {"forecast": _hourly_forecast(self.coordinator.data.get("_hourly"), "wave_direction")}
+
 
 class WavePeriodSensor(_BeachWeatherSensorBase):
     _attr_icon = "mdi:sine-wave"
@@ -251,6 +285,12 @@ class WavePeriodSensor(_BeachWeatherSensorBase):
         if not self.available:
             return None
         return round(self.coordinator.data["wave_period"], 2)
+
+    @property
+    def extra_state_attributes(self) -> dict:
+        if not self.available:
+            return {}
+        return {"forecast": _hourly_forecast(self.coordinator.data.get("_hourly"), "wave_period")}
 
 
 class SwellHeightSensor(_BeachWeatherSensorBase):
@@ -273,6 +313,14 @@ class SwellHeightSensor(_BeachWeatherSensorBase):
             return None
         return round(self.coordinator.data["swell_wave_height"], 2)
 
+    @property
+    def extra_state_attributes(self) -> dict:
+        if not self.available:
+            return {}
+        return {
+            "forecast": _hourly_forecast(self.coordinator.data.get("_hourly"), "swell_wave_height")
+        }
+
 
 class SwellDirectionSensor(_BeachWeatherSensorBase):
     _attr_icon = "mdi:compass-outline"
@@ -291,6 +339,16 @@ class SwellDirectionSensor(_BeachWeatherSensorBase):
         if not self.available:
             return None
         return round(self.coordinator.data["swell_wave_direction"])
+
+    @property
+    def extra_state_attributes(self) -> dict:
+        if not self.available:
+            return {}
+        return {
+            "forecast": _hourly_forecast(
+                self.coordinator.data.get("_hourly"), "swell_wave_direction"
+            )
+        }
 
 
 class SwellPeriodSensor(_BeachWeatherSensorBase):
@@ -313,6 +371,14 @@ class SwellPeriodSensor(_BeachWeatherSensorBase):
         if not self.available:
             return None
         return round(self.coordinator.data["swell_wave_period"], 2)
+
+    @property
+    def extra_state_attributes(self) -> dict:
+        if not self.available:
+            return {}
+        return {
+            "forecast": _hourly_forecast(self.coordinator.data.get("_hourly"), "swell_wave_period")
+        }
 
 
 class TimestampMarineSensor(_BeachWeatherSensorBase):

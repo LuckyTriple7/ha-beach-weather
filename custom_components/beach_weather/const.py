@@ -20,6 +20,13 @@ MARINE_CURRENT_PARAMS = (
     "wave_height,wave_direction,wave_period,sea_surface_temperature,"
     "swell_wave_height,swell_wave_direction,swell_wave_period"
 )
+# Only requested by MarineCoordinator, for the "forecast" attribute on the
+# wave/swell/water-temperature sensors.
+MARINE_HOURLY_PARAMS = (
+    "wave_height,wave_direction,wave_period,sea_surface_temperature,"
+    "swell_wave_height,swell_wave_direction,swell_wave_period"
+)
+MARINE_FORECAST_HOURS = 48
 
 FORECAST_API_URL = "https://api.open-meteo.com/v1/forecast"
 FORECAST_CURRENT_PARAMS = (
