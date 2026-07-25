@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import asyncio
-
 import voluptuous as vol
 
 from homeassistant import config_entries
@@ -38,7 +36,12 @@ from .const import (
     SURF_WEIGHT_RANGE,
     THRESHOLD_RANGES,
 )
-from .geo import async_suggest_name, async_suggest_orientation, parse_pasted_coordinates
+from .geo import (
+    async_search_place,
+    async_suggest_name,
+    async_suggest_orientation,
+    parse_pasted_coordinates,
+)
 from .thresholds import async_save_surf_weights, async_save_thresholds
 
 _ORIENTATION_SELECTOR = NumberSelector(
@@ -46,31 +49,34 @@ _ORIENTATION_SELECTOR = NumberSelector(
 )
 
 
-async def _async_apply_pasted_coordinates(hass, paste: str, prefill: dict, *, suggest_name: bool) -> bool:
-    """Parse a pasted "lat, lon" string into prefill[CONF_LOCATION] and, best
-    effort, look up a suggested name/orientation for it. Returns False (with
-    an error placed by the caller) if the text couldn't be parsed."""
-    parsed = parse_pasted_coordinates(paste)
-    if parsed is None:
-        return False
+async def _async_apply_pasted_or_searched_location(
+    hass, text: str, prefill: dict, *, suggest_name: bool
+) -> bool:
+    """Accepts either a pasted "lat, lon" string or a free-text place name
+    (resolved via Nominatim forward geocoding) into prefill[CONF_LOCATION],
+    then best-effort suggests a name/orientation for the resolved point.
+    Returns False if neither the coordinate parse nor the place search
+    resolved anything."""
+    parsed = parse_pasted_coordinates(text)
+    if parsed is not None:
+        lat, lon = parsed
+        searched_name = None
+    else:
+        result = await async_search_place(hass, text)
+        if result is None:
+            return False
+        lat, lon, searched_name = result
 
-    lat, lon = parsed
     prefill[CONF_LOCATION] = {"latitude": lat, "longitude": lon}
 
-    lookups = [async_suggest_orientation(hass, lat, lon)]
     if suggest_name:
-        lookups.insert(0, async_suggest_name(hass, lat, lon))
-    results = await asyncio.gather(*lookups, return_exceptions=True)
+        name = searched_name or await async_suggest_name(hass, lat, lon)
+        if name:
+            prefill[CONF_NAME] = name
 
-    if suggest_name:
-        suggested_name, suggested_orientation = results
-        if isinstance(suggested_name, str) and suggested_name:
-            prefill[CONF_NAME] = suggested_name
-    else:
-        (suggested_orientation,) = results
-
-    if isinstance(suggested_orientation, (int, float)):
-        prefill[CONF_BEACH_ORIENTATION] = suggested_orientation
+    orientation = await async_suggest_orientation(hass, lat, lon)
+    if orientation is not None:
+        prefill[CONF_BEACH_ORIENTATION] = orientation
     return True
 
 
@@ -112,14 +118,14 @@ class BeachWeatherConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         if user_input is not None:
             paste = (user_input.get(CONF_COORDINATES_PASTE) or "").strip()
             if paste:
-                # Re-show the same step with parsed coordinates + best-effort
+                # Re-show the same step with resolved coordinates + best-effort
                 # name/orientation suggestions pre-filled, for the user to
                 # review/adjust — don't create the entry on this pass.
-                ok = await _async_apply_pasted_coordinates(
+                ok = await _async_apply_pasted_or_searched_location(
                     self.hass, paste, self._prefill, suggest_name=True
                 )
                 if not ok:
-                    errors[CONF_COORDINATES_PASTE] = "invalid_coordinates"
+                    errors[CONF_COORDINATES_PASTE] = "location_not_found"
                 else:
                     return self.async_show_form(step_id="user", data_schema=self._schema())
             else:
@@ -168,11 +174,11 @@ class BeachWeatherOptionsFlow(config_entries.OptionsFlow):
             if paste:
                 # No name field on this step (name/slug stay frozen), so only
                 # location + orientation get suggested.
-                ok = await _async_apply_pasted_coordinates(
+                ok = await _async_apply_pasted_or_searched_location(
                     self.hass, paste, self._prefill, suggest_name=False
                 )
                 if not ok:
-                    errors[CONF_COORDINATES_PASTE] = "invalid_coordinates"
+                    errors[CONF_COORDINATES_PASTE] = "location_not_found"
                 else:
                     return self.async_show_form(
                         step_id="location", data_schema=self._location_schema(), errors=errors

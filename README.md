@@ -25,12 +25,14 @@ Home Assistant custom integration for beach and water conditions (water temperat
 ## Configuration
 
 1. **Settings → Devices & Services → Add Integration → Beach Weather**
-2. Optionally paste a "lat, lon" pair (e.g. copied straight out of Google Maps) into **Paste coordinates** and submit — this pre-fills the map, a suggested name and a suggested beach orientation below for you to review, without creating the location yet
+2. Optionally fill in **Paste coordinates or search a place** with either a "lat, lon" pair (e.g. copied straight out of Google Maps) or a free-text place name (e.g. "Maspalomas beach"), then submit — this pre-fills the map, a suggested name and a suggested beach orientation below for you to review, without creating the location yet
 3. Enter/confirm a name (e.g. "Platja de Muro") and the location — either type coordinates directly or pick them on the map widget
 4. Optionally adjust the polling interval (min. 300s)
 5. Set/confirm the **beach orientation** (° compass, seaward) — used by the Surf Score to judge whether wind/swell direction is favorable
 
-Add the integration again for each additional location. Both auto-suggestions are best-effort (Nominatim reverse geocoding for the name, nearest OSM coastline segment for the orientation) — review them before saving, especially the orientation on bays or complex coastlines.
+Add the integration again for each additional location. All auto-suggestions are best-effort (Nominatim for place search/name, nearest OSM coastline segment via Overpass for the orientation) — review them before saving, especially the orientation on bays or complex coastlines.
+
+> After updating via HACS, **restart Home Assistant** (not just reload the integration) — new translation strings (like this field's label) are only picked up on a full restart.
 
 ## Entities
 

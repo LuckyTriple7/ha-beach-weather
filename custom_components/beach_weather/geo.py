@@ -1,8 +1,9 @@
 """Best-effort location auto-suggest for the config flow: parsing a pasted
-"lat, lon" string, reverse-geocoding a place name (Nominatim), and estimating
-a beach's seaward orientation from the nearest OSM coastline segment
-(Overpass). All of this only ever pre-fills form fields — the user reviews
-and can override every value before the location is actually created."""
+"lat, lon" string or a free-text place name (forward/reverse geocoding via
+Nominatim), and estimating a beach's seaward orientation from the nearest
+OSM coastline segment (Overpass). All of this only ever pre-fills form
+fields — the user reviews and can override every value before the location
+is actually created."""
 from __future__ import annotations
 
 import asyncio
@@ -23,6 +24,7 @@ _COORD_PATTERN = re.compile(r"^\s*(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)\s*$"
 # ~1 request/sec — trivially satisfied since this only fires once per
 # "add location" flow, a human-paced action, never a polling loop.
 _NOMINATIM_URL = "https://nominatim.openstreetmap.org/reverse"
+_NOMINATIM_SEARCH_URL = "https://nominatim.openstreetmap.org/search"
 _OVERPASS_URL = "https://overpass-api.de/api/interpreter"
 _USER_AGENT = "beach-weather-ha-integration (https://github.com/LuckyTriple7/ha-beach-weather)"
 
@@ -86,6 +88,34 @@ async def async_suggest_name(hass: HomeAssistant, lat: float, lon: float) -> str
         or address.get("city")
         or data.get("name")
     )
+
+
+async def async_search_place(hass: HomeAssistant, query: str) -> tuple[float, float, str | None] | None:
+    """Forward-geocode a free-text place name via Nominatim (top result only).
+    Returns (lat, lon, display_name) or None on any failure/no match."""
+    session = async_get_clientsession(hass)
+    params = {"q": query, "format": "jsonv2", "limit": 1}
+    try:
+        async with async_timeout.timeout(10):
+            async with session.get(
+                _NOMINATIM_SEARCH_URL, params=params, headers={"User-Agent": _USER_AGENT}
+            ) as resp:
+                if resp.status != 200:
+                    return None
+                data = await resp.json()
+    except (aiohttp.ClientError, asyncio.TimeoutError, ValueError) as exc:
+        _LOGGER.debug("Nominatim place search failed: %s", exc)
+        return None
+
+    if not data:
+        return None
+    first = data[0]
+    try:
+        lat, lon = float(first["lat"]), float(first["lon"])
+    except (KeyError, TypeError, ValueError):
+        return None
+    name = first.get("name") or first.get("display_name")
+    return lat, lon, name
 
 
 async def async_suggest_orientation(hass: HomeAssistant, lat: float, lon: float) -> float | None:

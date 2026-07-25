@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.9.0] - 2026-07-25
+### Added
+- The "Paste coordinates" field also accepts a free-text place name now (e.g. "Maspalomas beach") — forward-geocoded via Nominatim to coordinates + a suggested name, same review-before-save flow as pasting raw coordinates
+
 ## [0.8.0] - 2026-07-25
 ### Added
 - "Paste coordinates" field when adding/editing a location: paste a "lat, lon" pair (e.g. copied from Google Maps) and submit to auto-fill the map, plus a suggested name (Nominatim reverse geocoding) and beach orientation (nearest OSM coastline segment, Overpass) — all pre-filled for review, nothing is saved until you confirm

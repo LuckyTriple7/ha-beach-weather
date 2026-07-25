@@ -141,22 +141,75 @@ class TestConfigFlow:
         assert result["data"][CONF_LONGITUDE] == -15.723408
         assert result["data"][CONF_BEACH_ORIENTATION] == 123
 
-    async def test_paste_invalid_coordinates_shows_error(self, hass):
+    async def test_paste_unresolvable_text_shows_error(self, hass):
         result = await hass.config_entries.flow.async_init(
             DOMAIN, context={"source": config_entries.SOURCE_USER}
         )
+        with patch(
+            "custom_components.beach_weather.config_flow.async_search_place",
+            new_callable=AsyncMock,
+            return_value=None,
+        ):
+            result = await hass.config_entries.flow.async_configure(
+                result["flow_id"],
+                {
+                    CONF_COORDINATES_PASTE: "not coordinates and no such place",
+                    CONF_NAME: "",
+                    CONF_LOCATION: LOCATION_INPUT,
+                    CONF_SCAN_INTERVAL: 900,
+                    CONF_BEACH_ORIENTATION: 0,
+                },
+            )
+        assert result["type"] == FlowResultType.FORM
+        assert result["errors"][CONF_COORDINATES_PASTE] == "location_not_found"
+
+    async def test_paste_place_name_searches_and_prefills(self, hass):
+        result = await hass.config_entries.flow.async_init(
+            DOMAIN, context={"source": config_entries.SOURCE_USER}
+        )
+        with (
+            patch(
+                "custom_components.beach_weather.config_flow.async_search_place",
+                new_callable=AsyncMock,
+                return_value=(27.787333, -15.723408, "Playa de Maspalomas"),
+            ) as mock_search,
+            patch(
+                "custom_components.beach_weather.config_flow.async_suggest_name",
+                new_callable=AsyncMock,
+            ) as mock_reverse_name,
+            patch(
+                "custom_components.beach_weather.config_flow.async_suggest_orientation",
+                new_callable=AsyncMock,
+                return_value=45,
+            ),
+        ):
+            result = await hass.config_entries.flow.async_configure(
+                result["flow_id"],
+                {
+                    CONF_COORDINATES_PASTE: "Maspalomas beach",
+                    CONF_NAME: "",
+                    CONF_LOCATION: LOCATION_INPUT,
+                    CONF_SCAN_INTERVAL: 900,
+                    CONF_BEACH_ORIENTATION: 0,
+                },
+            )
+        assert result["type"] == FlowResultType.FORM
+        assert not result["errors"]
+        mock_search.assert_awaited_once_with(hass, "Maspalomas beach")
+        # Search already returned a name -> no need for the reverse-geocode fallback
+        mock_reverse_name.assert_not_called()
+
         result = await hass.config_entries.flow.async_configure(
             result["flow_id"],
             {
-                CONF_COORDINATES_PASTE: "not coordinates",
-                CONF_NAME: "",
-                CONF_LOCATION: LOCATION_INPUT,
+                CONF_NAME: "Playa de Maspalomas",
+                CONF_LOCATION: {"latitude": 27.787333, "longitude": -15.723408},
                 CONF_SCAN_INTERVAL: 900,
-                CONF_BEACH_ORIENTATION: 0,
+                CONF_BEACH_ORIENTATION: 45,
             },
         )
-        assert result["type"] == FlowResultType.FORM
-        assert result["errors"][CONF_COORDINATES_PASTE] == "invalid_coordinates"
+        assert result["type"] == FlowResultType.CREATE_ENTRY
+        assert result["data"][CONF_NAME] == "Playa de Maspalomas"
 
 
 class TestOptionsFlow:

@@ -4,6 +4,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 
 from custom_components.beach_weather.geo import (
+    async_search_place,
     async_suggest_name,
     async_suggest_orientation,
     haversine_m,
@@ -92,6 +93,60 @@ class TestAsyncSuggestName:
         ):
             name = await async_suggest_name(hass, 39.8, 3.11)
         assert name is None
+
+
+class TestAsyncSearchPlace:
+    async def test_returns_lat_lon_name_from_top_result(self, hass):
+        session = MagicMock()
+        session.get = MagicMock(
+            return_value=_mock_response(
+                200,
+                [
+                    {
+                        "lat": "27.787333",
+                        "lon": "-15.723408",
+                        "name": "Playa de Maspalomas",
+                        "display_name": "Playa de Maspalomas, Gran Canaria, Spain",
+                    }
+                ],
+            )
+        )
+        with patch(
+            "custom_components.beach_weather.geo.async_get_clientsession", return_value=session
+        ):
+            result = await async_search_place(hass, "Maspalomas beach")
+        assert result == (27.787333, -15.723408, "Playa de Maspalomas")
+
+    async def test_falls_back_to_display_name_when_no_short_name(self, hass):
+        session = MagicMock()
+        session.get = MagicMock(
+            return_value=_mock_response(
+                200, [{"lat": "1.0", "lon": "2.0", "display_name": "Somewhere, Region, Country"}]
+            )
+        )
+        with patch(
+            "custom_components.beach_weather.geo.async_get_clientsession", return_value=session
+        ):
+            result = await async_search_place(hass, "somewhere")
+        assert result == (1.0, 2.0, "Somewhere, Region, Country")
+
+    async def test_returns_none_when_no_results(self, hass):
+        session = MagicMock()
+        session.get = MagicMock(return_value=_mock_response(200, []))
+        with patch(
+            "custom_components.beach_weather.geo.async_get_clientsession", return_value=session
+        ):
+            result = await async_search_place(hass, "nonexistent place xyz")
+        assert result is None
+
+    async def test_returns_none_on_http_error(self, hass):
+        session = MagicMock()
+        session.get = MagicMock(return_value=_mock_response(500, []))
+        with patch(
+            "custom_components.beach_weather.geo.async_get_clientsession", return_value=session
+        ):
+            result = await async_search_place(hass, "somewhere")
+        assert result is None
 
 
 class TestAsyncSuggestOrientation:
