@@ -31,6 +31,29 @@ MOCK_FORECAST_CURRENT = {
     "cloud_cover": 92,
     "uv_index": 6.15,
     "is_day": 1,
+    "_hourly": {
+        "time": ["2026-07-22T16:00", "2026-07-22T17:00"],
+        "temperature_2m": [27.0, 26.5],
+        "weather_code": [1, 2],
+        "precipitation": [0.0, 0.0],
+        "precipitation_probability": [0, 5],
+        "wind_speed_10m": [20.0, 18.0],
+        "wind_direction_10m": [50, 55],
+        "pressure_msl": [1009.0, 1009.2],
+        "relative_humidity_2m": [65, 66],
+        "uv_index": [3.0, 2.0],
+    },
+    "_daily": {
+        "time": ["2026-07-22", "2026-07-23"],
+        "weather_code": [1, 2],
+        "temperature_2m_max": [30.0, 29.0],
+        "temperature_2m_min": [24.0, 23.5],
+        "precipitation_sum": [0.0, 0.1],
+        "precipitation_probability_max": [0, 10],
+        "wind_speed_10m_max": [25.0, 22.0],
+        "wind_direction_10m_dominant": [48, 52],
+        "uv_index_max": [7.0, 6.5],
+    },
 }
 
 

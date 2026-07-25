@@ -27,6 +27,16 @@ FORECAST_CURRENT_PARAMS = (
     "temperature_2m,weather_code,relative_humidity_2m,precipitation,rain,"
     "showers,pressure_msl,cloud_cover,uv_index,is_day"
 )
+# Only requested by ForecastCoordinator, for the weather.<slug> entity's forecast.
+FORECAST_HOURLY_PARAMS = (
+    "temperature_2m,weather_code,precipitation,precipitation_probability,"
+    "wind_speed_10m,wind_direction_10m,pressure_msl,relative_humidity_2m,uv_index"
+)
+FORECAST_DAILY_PARAMS = (
+    "weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,"
+    "precipitation_probability_max,wind_speed_10m_max,wind_direction_10m_dominant,"
+    "uv_index_max"
+)
 
 # Global outbound-request pacing (shared across ALL config entries/coordinators)
 RATE_LIMIT_MIN_SPACING = 3.0  # seconds between the start of any two outbound requests

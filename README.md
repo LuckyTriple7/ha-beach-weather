@@ -9,6 +9,7 @@ Home Assistant custom integration for beach and water conditions (water temperat
 
 - Any number of locations, each its own config entry — enter coordinates manually or pick them on a map
 - Water temperature, wave height/period, wind speed/gusts/direction, plus a computed "bathing conditions" sensor
+- A standard HA `weather.<slug>` entity per location with hourly + daily forecast, for the native weather card
 - All requests across every location are routed through a single shared rate limiter, so having many locations configured never bursts Open-Meteo with parallel requests (avoids HTTP 403)
 - Automatic error backoff on 403/429 responses
 - Fully configured through the HA UI, no YAML required
@@ -70,8 +71,13 @@ One HA device per location, named after the location. All entity IDs include a s
 | `sensor.surf_score_platja_de_muro` | Surf quality, 0-100 |
 | `sensor.surf_condition_platja_de_muro` | Surf quality as a category (No surf / Poor / Okay / Good / Very good / Perfect conditions) |
 | `sensor.surf_stars_platja_de_muro` | Surf quality as star rating (★ to ★★★★★), with the numeric score and star count as attributes |
+| `weather.platja_de_muro` | Standard HA weather entity — current conditions plus hourly/daily forecast |
 
 A sensor becomes `unavailable` when Open-Meteo doesn't return a value for that field, or when the request fails. The two "Last Status" sensors are the exception — they stay visible even after a failed update, showing the raw status code (e.g. `403`) so a rate-limit issue is diagnosable without digging through the log.
+
+## Weather entity
+
+`weather.<slug>` is a standard Home Assistant weather entity — works with the built-in weather card, `weather.get_forecasts`, and anything else that expects a normal `weather.*` entity. It covers only the atmospheric side (temperature, wind, pressure, humidity, cloud cover, UV index, precipitation, condition) from the Forecast API's `current`/`hourly`/`daily` blocks — wave/swell/surf data has no place in HA's weather model and stays on the dedicated sensors above. WMO weather codes are mapped to HA's standard condition strings (`sunny`/`clear-night` for codes 0-1, day/night aware; `partlycloudy`, `cloudy`, `fog`, `rainy`, `pouring`, `snowy`, `snowy-rainy`, `lightning`, `lightning-rainy` for the rest).
 
 ## Bathing condition thresholds
 

@@ -19,7 +19,7 @@ from .coordinator import ForecastCoordinator, MarineCoordinator
 from .ratelimiter import OpenMeteoRateLimiter
 from .thresholds import async_load_surf_weights, async_load_thresholds
 
-PLATFORMS = ["sensor", "button"]
+PLATFORMS = ["sensor", "button", "weather"]
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:

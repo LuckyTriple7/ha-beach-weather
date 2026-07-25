@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.13.0] - 2026-07-25
+### Added
+- New `weather.<slug>` entity per location — standard HA weather entity (current conditions + hourly/daily forecast) for the native weather card and `weather.get_forecasts`, covering only atmospheric data from the Forecast API. Requests now also fetch `hourly`/`daily` blocks for the Forecast coordinator (Marine stays current-only)
+
 ## [0.12.0] - 2026-07-25
 ### Added
 - New `sensor.swell_period` (swell_wave_period from the Marine API), and the Surf Score's "wave period" factor now uses it instead of the mixed `wave_period` — isolates groundswell quality from local wind chop, sharpening the score

@@ -21,6 +21,8 @@ from .const import (
     ERROR_BACKOFF,
     FORECAST_API_URL,
     FORECAST_CURRENT_PARAMS,
+    FORECAST_DAILY_PARAMS,
+    FORECAST_HOURLY_PARAMS,
     MARINE_API_URL,
     MARINE_CURRENT_PARAMS,
 )
@@ -37,6 +39,8 @@ class OpenMeteoCoordinatorBase(DataUpdateCoordinator[dict[str, Any] | None]):
     API_NAME: str
     API_URL: str
     CURRENT_PARAMS: str
+    HOURLY_PARAMS: str | None = None
+    DAILY_PARAMS: str | None = None
 
     def __init__(self, hass: HomeAssistant, entry: ConfigEntry, update_interval: int) -> None:
         super().__init__(
@@ -84,6 +88,11 @@ class OpenMeteoCoordinatorBase(DataUpdateCoordinator[dict[str, Any] | None]):
             "longitude": self.longitude,
             "current": self.CURRENT_PARAMS,
         }
+        if self.HOURLY_PARAMS:
+            params["hourly"] = self.HOURLY_PARAMS
+        if self.DAILY_PARAMS:
+            params["daily"] = self.DAILY_PARAMS
+
         async with async_timeout.timeout(15):
             async with self._http.get(self.API_URL, params=params) as resp:
                 self.last_status_code = resp.status
@@ -96,7 +105,15 @@ class OpenMeteoCoordinatorBase(DataUpdateCoordinator[dict[str, Any] | None]):
         current = data.get("current")
         if not current:
             raise UpdateFailed("Open-Meteo response missing 'current' block")
-        return current
+
+        # Stashed alongside the flat current fields (not nested) so every
+        # existing sensor reading coordinator.data["some_field"] is unaffected.
+        result = dict(current)
+        if self.HOURLY_PARAMS:
+            result["_hourly"] = data.get("hourly")
+        if self.DAILY_PARAMS:
+            result["_daily"] = data.get("daily")
+        return result
 
     async def _async_update_data(self) -> dict[str, Any] | None:
         loop = asyncio.get_running_loop()
@@ -154,3 +171,5 @@ class ForecastCoordinator(OpenMeteoCoordinatorBase):
     API_NAME = "forecast"
     API_URL = FORECAST_API_URL
     CURRENT_PARAMS = FORECAST_CURRENT_PARAMS
+    HOURLY_PARAMS = FORECAST_HOURLY_PARAMS
+    DAILY_PARAMS = FORECAST_DAILY_PARAMS
