@@ -9,6 +9,58 @@ const DEFAULT_FONT_SIZE = 16;
 const DEFAULT_ICON_SIZE = 28;
 const GRID_STEP = 5; // percent — drag positions snap to this grid so values line up easily
 
+const TRANSLATIONS = {
+  en: {
+    location: "Location",
+    preview_hint: "Preview — drag values to position them (snaps to grid, hold Alt for free placement)",
+    add_value: "+ Add value",
+    advanced: "Advanced",
+    background: "Background image",
+    bg_default: "Default (sunny)",
+    bg_sunset: "Sunset",
+    bg_custom: "Custom URL…",
+    bg_url: "Image URL",
+    aspect_ratio: "Aspect ratio (e.g. 16:9, 4:3, 1:1)",
+    text_color: "Text color",
+    font_size: "Font size (px)",
+    icon_size: "Icon size (px)",
+    name: "Name",
+    icon: "Icon",
+    centered: "Centered",
+    remove: "Remove",
+    no_sensor: "(no sensor)",
+    no_items_card: "Beach Weather Card: no values configured.",
+    no_state: "–",
+  },
+  de: {
+    location: "Standort",
+    preview_hint: "Vorschau — Werte per Drag positionieren (rastet am Raster ein, Alt gedrückt halten für freie Positionierung)",
+    add_value: "+ Wert hinzufügen",
+    advanced: "Erweitert",
+    background: "Hintergrundbild",
+    bg_default: "Standard (sonnig)",
+    bg_sunset: "Sonnenuntergang",
+    bg_custom: "Eigene URL…",
+    bg_url: "Bild-URL",
+    aspect_ratio: "Seitenverhältnis (z.B. 16:9, 4:3, 1:1)",
+    text_color: "Schriftfarbe",
+    font_size: "Schriftgröße (px)",
+    icon_size: "Icon-Größe (px)",
+    name: "Name",
+    icon: "Icon",
+    centered: "Zentriert",
+    remove: "Entfernen",
+    no_sensor: "(kein Sensor)",
+    no_items_card: "Beach Weather Card: keine Werte konfiguriert.",
+    no_state: "–",
+  },
+};
+
+function t(hass, key) {
+  const lang = (hass && hass.language ? hass.language : "en").toLowerCase().startsWith("de") ? "de" : "en";
+  return TRANSLATIONS[lang][key] || TRANSLATIONS.en[key] || key;
+}
+
 // `background_image` config value: "" -> DEFAULT_BACKGROUND, "sunset" -> SUNSET_BACKGROUND,
 // anything else is treated as a literal URL to a user-supplied image.
 function resolveBackground(value) {
@@ -126,7 +178,7 @@ class BeachWeatherCard extends HTMLElement {
     if (!this._config.items || this._config.items.length === 0) {
       const notice = document.createElement("div");
       notice.style.padding = "16px";
-      notice.textContent = "Beach Weather Card: keine Werte konfiguriert.";
+      notice.textContent = t(this._hass, "no_items_card");
       card.appendChild(notice);
       this.appendChild(card);
       this._itemNodes = [];
@@ -154,7 +206,7 @@ class BeachWeatherCard extends HTMLElement {
   _buildItemNode(item) {
     const el = document.createElement("div");
     el.style.position = "absolute";
-    el.style.left = `${item.x ?? 50}%`;
+    el.style.left = item.center_x ? "50%" : `${item.x ?? 50}%`;
     el.style.top = `${item.y ?? 50}%`;
     el.style.transform = "translate(-50%, -50%)";
     el.style.display = "flex";
@@ -210,7 +262,7 @@ class BeachWeatherCard extends HTMLElement {
     for (const node of this._itemNodes) {
       const stateObj = this._hass.states[node.item.entity];
       if (!stateObj) {
-        node.value.textContent = "–";
+        node.value.textContent = t(this._hass, "no_state");
         continue;
       }
       if (node.icon) {
@@ -269,7 +321,7 @@ class BeachWeatherCardEditor extends HTMLElement {
         .bwc-item.dragging { cursor: grabbing; outline: 2px dashed #fff; }
         .bwc-item span { font-size: 0.8em; font-weight: 600; }
         .bwc-list { display: flex; flex-direction: column; gap: 8px; }
-        .bwc-item-row { display: grid; grid-template-columns: 1fr auto auto auto; gap: 8px; align-items: center; }
+        .bwc-item-row { display: grid; grid-template-columns: 1fr auto auto auto auto; gap: 8px; align-items: center; }
         .bwc-add { align-self: flex-start; }
         .bwc-advanced { display: flex; flex-direction: column; gap: 8px; }
         input[type="text"], select { padding: 6px; border-radius: 4px; border: 1px solid var(--divider-color);
@@ -279,43 +331,43 @@ class BeachWeatherCardEditor extends HTMLElement {
       </style>
       <div class="bwc-editor">
         <div class="bwc-row">
-          <label>Standort</label>
+          <label>${t(this._hass, "location")}</label>
           <select id="device"></select>
         </div>
         <div class="bwc-row">
-          <label>Vorschau — Werte per Drag positionieren (rastet am Raster ein, Alt gedrückt halten für freie Positionierung)</label>
+          <label>${t(this._hass, "preview_hint")}</label>
           <div class="bwc-canvas" id="canvas"></div>
         </div>
         <div class="bwc-list" id="list"></div>
-        <button class="bwc-add" id="add">+ Wert hinzufügen</button>
+        <button class="bwc-add" id="add">${t(this._hass, "add_value")}</button>
         <details class="bwc-advanced">
-          <summary>Erweitert</summary>
+          <summary>${t(this._hass, "advanced")}</summary>
           <div class="bwc-row">
-            <label>Hintergrundbild</label>
+            <label>${t(this._hass, "background")}</label>
             <select id="bg-preset">
-              <option value="">Standard (sonnig)</option>
-              <option value="sunset">Sonnenuntergang</option>
-              <option value="custom">Eigene URL…</option>
+              <option value="">${t(this._hass, "bg_default")}</option>
+              <option value="sunset">${t(this._hass, "bg_sunset")}</option>
+              <option value="custom">${t(this._hass, "bg_custom")}</option>
             </select>
           </div>
           <div class="bwc-row" id="bg-custom-row">
-            <label>Bild-URL</label>
+            <label>${t(this._hass, "bg_url")}</label>
             <input type="text" id="bg-custom" />
           </div>
           <div class="bwc-row">
-            <label>Seitenverhältnis (z.B. 16:9, 4:3, 1:1)</label>
+            <label>${t(this._hass, "aspect_ratio")}</label>
             <input type="text" id="aspect" />
           </div>
           <div class="bwc-row">
-            <label>Schriftfarbe</label>
+            <label>${t(this._hass, "text_color")}</label>
             <input type="color" id="text-color" />
           </div>
           <div class="bwc-row">
-            <label>Schriftgröße (px)</label>
+            <label>${t(this._hass, "font_size")}</label>
             <input type="number" id="font-size" min="8" max="72" />
           </div>
           <div class="bwc-row">
-            <label>Icon-Größe (px)</label>
+            <label>${t(this._hass, "icon_size")}</label>
             <input type="number" id="icon-size" min="8" max="96" />
           </div>
         </details>
@@ -412,7 +464,7 @@ class BeachWeatherCardEditor extends HTMLElement {
     (this._config.items || []).forEach((item, index) => {
       const el = document.createElement("div");
       el.className = "bwc-item";
-      el.style.left = `${item.x ?? 50}%`;
+      el.style.left = item.center_x ? "50%" : `${item.x ?? 50}%`;
       el.style.top = `${item.y ?? 50}%`;
       el.style.color = this._config.text_color || DEFAULT_TEXT_COLOR;
 
@@ -429,7 +481,7 @@ class BeachWeatherCardEditor extends HTMLElement {
 
       const value = document.createElement("span");
       value.style.fontSize = `${this._config.font_size || DEFAULT_FONT_SIZE}px`;
-      value.textContent = item.entity ? entityLabel(this._hass, item.entity) : "(kein Sensor)";
+      value.textContent = item.entity ? entityLabel(this._hass, item.entity) : t(this._hass, "no_sensor");
       el.appendChild(value);
 
       el.addEventListener("pointerdown", (ev) => this._startDrag(ev, index, el, canvas));
@@ -441,6 +493,8 @@ class BeachWeatherCardEditor extends HTMLElement {
     ev.preventDefault();
     el.classList.add("dragging");
     el.setPointerCapture(ev.pointerId);
+
+    const centerX = !!this._config.items[index].center_x;
 
     const move = (moveEv) => {
       const rect = canvas.getBoundingClientRect();
@@ -454,6 +508,7 @@ class BeachWeatherCardEditor extends HTMLElement {
         x = Math.round(x / GRID_STEP) * GRID_STEP;
         y = Math.round(y / GRID_STEP) * GRID_STEP;
       }
+      if (centerX) x = 50; // horizontally centered items only move vertically
       el.style.left = `${x}%`;
       el.style.top = `${y}%`;
       this._config.items[index] = { ...this._config.items[index], x, y };
@@ -494,19 +549,24 @@ class BeachWeatherCardEditor extends HTMLElement {
       row.appendChild(select);
 
       row.appendChild(
-        this._toggle("Name", item.show_name === true, (checked) =>
+        this._toggle(t(this._hass, "name"), item.show_name === true, (checked) =>
           this._updateItem(index, { show_name: checked })
         )
       );
       row.appendChild(
-        this._toggle("Icon", item.show_icon !== false, (checked) =>
+        this._toggle(t(this._hass, "icon"), item.show_icon !== false, (checked) =>
           this._updateItem(index, { show_icon: checked })
+        )
+      );
+      row.appendChild(
+        this._toggle(t(this._hass, "centered"), item.center_x === true, (checked) =>
+          this._updateItem(index, { center_x: checked })
         )
       );
 
       const remove = document.createElement("button");
       remove.textContent = "×";
-      remove.title = "Entfernen";
+      remove.title = t(this._hass, "remove");
       remove.addEventListener("click", () => this._removeItem(index));
       row.appendChild(remove);
 
@@ -568,7 +628,7 @@ if (!window.customCards.some((c) => c.type === CARD_TAG)) {
   window.customCards.push({
     type: CARD_TAG,
     name: "Beach Weather Card",
-    description: "Strand-/Wetterwerte frei positioniert über einem Hintergrundbild.",
+    description: "Beach/water values freely positioned over a background photo.",
     preview: true,
   });
 }

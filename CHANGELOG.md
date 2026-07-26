@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.16.0] - 2026-07-26
+### Added
+- Per-value "Zentriert"/"Centered" toggle — locks the value to horizontal center (x stays at 50%, only vertical position is draggable), handy for stacking a title and the weather below it on the same center line
+- The card editor's UI text (labels, buttons, toggles) is now translated based on the HA UI language (English/German), matching the rest of the integration instead of always showing German
+
 ## [0.15.5] - 2026-07-26
 ### Added
 - Editor's drag canvas now shows a 5% grid and snaps values to it while dragging — makes lining values up on the same row/column much easier. Hold Alt while dragging for free (unsnapped) positioning
