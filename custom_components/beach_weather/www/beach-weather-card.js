@@ -71,30 +71,30 @@ function t(hass, key) {
 // a real night shot for "clear-night" (currently reuses the sunset photo
 // as a placeholder).
 const AUTO_BACKGROUND_MAP = {
-  "clear-night": "sunset",
+  night: "sunset",
 };
 
-function findWeatherEntity(hass, deviceId) {
+function findEntityByKey(hass, deviceId, key) {
   if (!hass || !deviceId) return null;
   const match = Object.values(hass.entities || {}).find(
-    (entity) => entity.device_id === deviceId && entity.entity_id.startsWith("weather.")
+    (entity) => entity.device_id === deviceId && entity.entity_id.startsWith(`sensor.${key}_`)
   );
   return match ? match.entity_id : null;
 }
 
-// "auto" picks a bundled photo from the location's weather.<slug> condition
-// (which is also day/night aware, e.g. "clear-night" vs "sunny") — falls
-// back to the default (sunny) photo if no weather entity/state is available.
+// "auto" picks a bundled photo from the location's sensor.is_day (values
+// "day"/"night", from Open-Meteo's raw is_day field) — this stays correct
+// for e.g. a rainy night, unlike inferring day/night from the weather
+// condition string, which HA only distinguishes for "clear-night".
 function resolveAutoBackgroundKey(hass, deviceId) {
-  const weatherEntityId = findWeatherEntity(hass, deviceId);
-  const stateObj = weatherEntityId ? hass.states[weatherEntityId] : null;
-  const condition = stateObj ? stateObj.state : null;
-  return AUTO_BACKGROUND_MAP[condition] || "";
+  const isDayEntityId = findEntityByKey(hass, deviceId, "is_day");
+  const stateObj = isDayEntityId ? hass.states[isDayEntityId] : null;
+  return AUTO_BACKGROUND_MAP[stateObj ? stateObj.state : null] || "";
 }
 
 // `background_image` config value: "" -> DEFAULT_BACKGROUND, "sunset" -> SUNSET_BACKGROUND,
-// "auto" -> resolved from the location's live weather condition, anything
-// else is treated as a literal URL to a user-supplied image.
+// "auto" -> resolved from the location's is_day sensor, anything else is
+// treated as a literal URL to a user-supplied image.
 function resolveBackground(value, hass, deviceId) {
   if (!value) return DEFAULT_BACKGROUND;
   if (value === "auto") return resolveBackground(resolveAutoBackgroundKey(hass, deviceId));
@@ -454,6 +454,10 @@ class BeachWeatherCardEditor extends HTMLElement {
       </div>
     `;
     this._built = true;
+    // Editor-only UI state: whether "Eigene URL/Custom URL" is the active
+    // preset selection. Can't be derived from background_image alone, since
+    // "" is ambiguous between "default photo" and "custom URL not typed yet".
+    this._customBg = !["", "sunset", "auto"].includes(this._config.background_image || "");
 
     this.querySelector("#device").addEventListener("change", (ev) => {
       const deviceId = ev.target.value;
@@ -465,12 +469,17 @@ class BeachWeatherCardEditor extends HTMLElement {
     this.querySelector("#add").addEventListener("click", () => this._addItem());
     this.querySelector("#bg-preset").addEventListener("change", (ev) => {
       const preset = ev.target.value;
-      const background_image = preset === "custom" ? "" : preset;
-      this._config = { ...this._config, background_image };
+      this._customBg = preset === "custom";
+      if (!this._customBg) {
+        this._config = { ...this._config, background_image: preset };
+      } else if (["", "sunset", "auto"].includes(this._config.background_image || "")) {
+        this._config = { ...this._config, background_image: "" };
+      }
       this._fireChanged();
       this._renderDynamic();
     });
     this.querySelector("#bg-custom").addEventListener("change", (ev) => {
+      this._customBg = true;
       this._config = { ...this._config, background_image: ev.target.value };
       this._fireChanged();
       this._renderDynamic();
@@ -515,7 +524,7 @@ class BeachWeatherCardEditor extends HTMLElement {
     deviceSelect.value = this._config.device_id || "";
 
     const bg = this._config.background_image || "";
-    const isPreset = bg === "" || bg === "sunset" || bg === "auto";
+    const isPreset = !this._customBg && (bg === "" || bg === "sunset" || bg === "auto");
     this.querySelector("#bg-preset").value = isPreset ? bg : "custom";
     this.querySelector("#bg-custom-row").style.display = isPreset ? "none" : "";
     this.querySelector("#bg-custom").value = isPreset ? "" : bg;

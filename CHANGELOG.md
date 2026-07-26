@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.17.1] - 2026-07-26
+### Fixed
+- "Automatic (weather)" background inferred day/night from the `weather.<slug>` condition string, which HA only distinguishes for "clear-night" — a cloudy or rainy night still showed the sunny photo. Now reads `sensor.is_day` directly, which is correct regardless of weather condition
+- Selecting "Eigene URL"/"Custom URL" in the background dropdown did nothing — it set `background_image` to `""`, which is also the "default photo" value, so the dropdown immediately snapped back and the URL field never appeared
+
 ## [0.17.0] - 2026-07-26
 ### Added
 - Per-value "Y zentriert"/"Centered Y" toggle, alongside the existing X one — locks a value's y to 50% so it only moves horizontally, for the symmetric case of the X-centering toggle
