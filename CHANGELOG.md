@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.15.0] - 2026-07-26
+### Added
+- New Lovelace card (`custom:beach-weather-card`), bundled with the integration and auto-registered — no manual resource setup needed. Pick a location and drag sensor values (icon + value, name optional) freely onto a beach photo background, right in the card's visual editor. Ships with two default background photos (sunny / sunset), a custom image URL is also supported. Card width is responsive, with a configurable aspect ratio
+
 ## [0.14.0] - 2026-07-25
 ### Added
 - Marine coordinator now also requests an hourly forecast (wave height/direction/period, swell height/direction/period, sea surface temperature). The 7 corresponding sensors each expose a `forecast` attribute — next 48 hours as `[{"time", "value"}, ...]`, filtered to future timestamps only

@@ -2,7 +2,10 @@ from __future__ import annotations
 
 import asyncio
 import random
+from pathlib import Path
 
+from homeassistant.components.frontend import add_extra_js_url
+from homeassistant.components.http import StaticPathConfig
 from homeassistant.config_entries import ConfigEntry, ConfigEntryState
 from homeassistant.core import HomeAssistant
 
@@ -21,6 +24,25 @@ from .thresholds import async_load_surf_weights, async_load_thresholds
 
 PLATFORMS = ["sensor", "button", "weather"]
 
+# Bump alongside manifest.json's "version" so browsers pick up card changes
+# after a HACS update instead of serving a cached copy of the old script.
+CARD_VERSION = "0.15.0"
+STATIC_URL_PATH = "/beach_weather_static"
+CARD_URL = f"{STATIC_URL_PATH}/beach-weather-card.js?v={CARD_VERSION}"
+
+
+async def _async_register_frontend(hass: HomeAssistant) -> None:
+    # The `http` component isn't loaded in the unit test harness (it's not
+    # requested by any fixture there, so hass.http stays None); skip
+    # registration rather than error.
+    if getattr(hass, "http", None) is None:
+        return
+    www_path = Path(__file__).parent / "www"
+    await hass.http.async_register_static_paths(
+        [StaticPathConfig(STATIC_URL_PATH, str(www_path), cache_headers=False)]
+    )
+    add_extra_js_url(hass, CARD_URL)
+
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     domain_data = hass.data.setdefault(DOMAIN, {})
@@ -29,6 +51,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         domain_data["thresholds"] = await async_load_thresholds(hass)
     if "surf_weights" not in domain_data:
         domain_data["surf_weights"] = await async_load_surf_weights(hass)
+    if not domain_data.get("frontend_registered"):
+        await _async_register_frontend(hass)
+        domain_data["frontend_registered"] = True
 
     effective = {**entry.data, **entry.options}
     scan_interval = effective.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL)

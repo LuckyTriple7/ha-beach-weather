@@ -10,6 +10,7 @@ Home Assistant custom integration for beach and water conditions (water temperat
 - Any number of locations, each its own config entry — enter coordinates manually or pick them on a map
 - Water temperature, wave height/period, wind speed/gusts/direction, plus a computed "bathing conditions" sensor
 - A standard HA `weather.<slug>` entity per location with hourly + daily forecast, for the native weather card
+- Bundled Lovelace card (`custom:beach-weather-card`) — freely position sensor values over a beach photo, no manual resource setup needed
 - All requests across every location are routed through a single shared rate limiter, so having many locations configured never bursts Open-Meteo with parallel requests (avoids HTTP 403)
 - Automatic error backoff on 403/429 responses
 - Fully configured through the HA UI, no YAML required
@@ -80,6 +81,36 @@ The 7 Marine sensors (water temperature, wave height/direction/period, swell hei
 ## Weather entity
 
 `weather.<slug>` is a standard Home Assistant weather entity — works with the built-in weather card, `weather.get_forecasts`, and anything else that expects a normal `weather.*` entity. It covers only the atmospheric side (temperature, wind, pressure, humidity, cloud cover, UV index, precipitation, condition) from the Forecast API's `current`/`hourly`/`daily` blocks — wave/swell/surf data has no place in HA's weather model and stays on the dedicated sensors above. WMO weather codes are mapped to HA's standard condition strings (`sunny`/`clear-night` for codes 0-1, day/night aware; `partlycloudy`, `cloudy`, `fog`, `rainy`, `pouring`, `snowy`, `snowy-rainy`, `lightning`, `lightning-rainy` for the rest).
+
+## Lovelace Card
+
+The integration ships its own card, `custom:beach-weather-card` — it registers itself automatically after installing/updating via HACS and restarting Home Assistant, no manual "Add resource" step required.
+
+1. Open a dashboard → **Edit Dashboard** → **Add Card** → search for **Beach Weather Card**
+2. In the card editor, pick a **location** (one of your Beach Weather devices)
+3. Drag the value chips directly on the preview image to position them
+4. Per value: choose the sensor, toggle whether the name is shown, toggle whether the icon is shown, or remove it
+5. Under **Erweitert**: pick one of the two bundled background photos (sunny / sunset) or supply your own image URL, and adjust the card's aspect ratio (e.g. `16:9`, `4:3`, `1:1`) — the card's width is always responsive to the dashboard column
+
+Example YAML:
+
+```yaml
+type: custom:beach-weather-card
+device_id: 3f8a1c2b9e4d5f6a7b8c9d0e1f2a3b4c
+aspect_ratio: "16:9"
+background_image: ""   # "" = sunny (default), "sunset" = bundled sunset photo, or any image URL
+items:
+  - entity: sensor.water_temperature_platja_de_muro
+    x: 12
+    y: 20
+    show_name: false
+    show_icon: true
+  - entity: sensor.wave_height_platja_de_muro
+    x: 12
+    y: 35
+    show_name: true
+    show_icon: true
+```
 
 ## Bathing condition thresholds
 
