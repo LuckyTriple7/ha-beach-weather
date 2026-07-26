@@ -71,12 +71,23 @@ function resolveBackground(value) {
 
 // Sensor-key prefixes (see const.py) used to pre-fill a freshly added card
 // with a sensible layout before the user has touched the editor at all.
+// `domain` matches by entity domain instead of a "sensor.<key>_" prefix,
+// used for the weather.<slug> entity which isn't a "sensor.*".
 const STUB_ITEMS = [
-  { key: "water_temperature", x: 15, y: 20 },
-  { key: "wave_height", x: 15, y: 38 },
-  { key: "wind_speed", x: 15, y: 56 },
-  { key: "bathing_conditions", x: 15, y: 74 },
+  { key: "location", x: 49.63, y: 7.22, show_name: false, show_icon: false, center_x: true },
+  { domain: "weather", x: 49.46, y: 21.08, show_name: false, show_icon: true, center_x: true },
+  { key: "air_temperature", x: 10, y: 40, show_name: false, show_icon: true },
+  { key: "uv_index", x: 10, y: 15, show_name: false, show_icon: true },
+  { key: "water_temperature", x: 60, y: 65, show_name: false, show_icon: true },
+  { key: "wind_speed", x: 30, y: 40, show_name: false, show_icon: true },
+  { key: "wave_height", x: 10, y: 80, show_name: false, show_icon: true },
+  { key: "wave_period", x: 30, y: 80, show_name: false, show_icon: true },
+  { key: "surf_stars", x: 80, y: 95, show_name: false, show_icon: false },
+  { key: "bathing_conditions", x: 83.37, y: 81.51, show_name: false, show_icon: true },
 ];
+const STUB_TEXT_COLOR = "#0a0000";
+const STUB_FONT_SIZE = 13;
+const STUB_ICON_SIZE = 24;
 
 function devicesForIntegration(hass) {
   if (!hass) return [];
@@ -119,14 +130,30 @@ class BeachWeatherCard extends HTMLElement {
   static getStubConfig(hass) {
     const device = devicesForIntegration(hass)[0];
     if (!device) {
-      return { type: `custom:${CARD_TAG}`, aspect_ratio: DEFAULT_ASPECT_RATIO, items: [] };
+      return {
+        type: `custom:${CARD_TAG}`,
+        aspect_ratio: DEFAULT_ASPECT_RATIO,
+        text_color: STUB_TEXT_COLOR,
+        font_size: STUB_FONT_SIZE,
+        icon_size: STUB_ICON_SIZE,
+        items: [],
+      };
     }
     const entities = entitiesForDevice(hass, device.id);
     const items = [];
     for (const stub of STUB_ITEMS) {
-      const match = entities.find((entityId) => entityId.startsWith(`sensor.${stub.key}_`));
+      const match = entities.find((entityId) =>
+        stub.domain ? entityId.startsWith(`${stub.domain}.`) : entityId.startsWith(`sensor.${stub.key}_`)
+      );
       if (match) {
-        items.push({ entity: match, x: stub.x, y: stub.y, show_name: true, show_icon: true });
+        items.push({
+          entity: match,
+          x: stub.x,
+          y: stub.y,
+          show_name: stub.show_name ?? true,
+          show_icon: stub.show_icon ?? true,
+          ...(stub.center_x ? { center_x: true } : {}),
+        });
       }
     }
     return {
@@ -134,6 +161,9 @@ class BeachWeatherCard extends HTMLElement {
       device_id: device.id,
       aspect_ratio: DEFAULT_ASPECT_RATIO,
       background_image: "",
+      text_color: STUB_TEXT_COLOR,
+      font_size: STUB_FONT_SIZE,
+      icon_size: STUB_ICON_SIZE,
       items,
     };
   }
