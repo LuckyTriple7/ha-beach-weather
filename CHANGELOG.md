@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.17.0] - 2026-07-26
+### Added
+- Per-value "Y zentriert"/"Centered Y" toggle, alongside the existing X one — locks a value's y to 50% so it only moves horizontally, for the symmetric case of the X-centering toggle
+- New background option "Automatisch (Wetter)"/"Automatic (weather)" — picks a bundled photo based on the location's live `weather.<slug>` condition instead of a fixed photo. Currently only distinguishes day (sunny photo) vs. `clear-night` (sunset photo as a placeholder); more conditions can get dedicated photos later by extending `AUTO_BACKGROUND_MAP`
+
 ## [0.16.2] - 2026-07-26
 ### Fixed
 - Switching the location dropdown in the editor emptied the whole layout instead of re-applying the default — it now rebuilds the default layout against the newly selected location's entities, matching what a freshly added card gets

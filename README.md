@@ -89,8 +89,8 @@ The integration ships its own card, `custom:beach-weather-card` — it registers
 1. Open a dashboard → **Edit Dashboard** → **Add Card** → search for **Beach Weather Card**
 2. In the card editor, pick a **location** (one of your Beach Weather devices)
 3. Drag the value chips directly on the preview image to position them
-4. Per value: choose the sensor, toggle whether the name is shown, toggle whether the icon is shown, toggle horizontal centering (locks x to 50%, e.g. for a title above the weather), or remove it
-5. Under **Erweitert**: pick one of the two bundled background photos (sunny / sunset) or supply your own image URL, adjust the card's aspect ratio (e.g. `16:9`, `4:3`, `1:1`), text color, font size and icon size — the card's width is always responsive to the dashboard column
+4. Per value: choose the sensor, toggle whether the name is shown, toggle whether the icon is shown, toggle horizontal/vertical centering (locks x and/or y to 50%, e.g. for a title stacked above the weather), or remove it
+5. Under **Erweitert**: pick a background — the two bundled photos (sunny / sunset), **Automatic (weather)** (picks a bundled photo from the location's live `weather.<slug>` condition, e.g. `clear-night` uses the sunset photo as a placeholder until a dedicated night photo is added) — or supply your own image URL. Also adjust the card's aspect ratio (e.g. `16:9`, `4:3`, `1:1`), text color, font size and icon size — the card's width is always responsive to the dashboard column
 
 Example YAML:
 
@@ -98,7 +98,7 @@ Example YAML:
 type: custom:beach-weather-card
 device_id: 3f8a1c2b9e4d5f6a7b8c9d0e1f2a3b4c
 aspect_ratio: "16:9"
-background_image: ""   # "" = sunny (default), "sunset" = bundled sunset photo, or any image URL
+background_image: ""   # "" = sunny (default), "sunset" = bundled sunset photo, "auto" = based on live weather condition, or any image URL
 text_color: "#ffffff"
 font_size: 16   # px
 icon_size: 28   # px

@@ -18,6 +18,7 @@ const TRANSLATIONS = {
     background: "Background image",
     bg_default: "Default (sunny)",
     bg_sunset: "Sunset",
+    bg_auto: "Automatic (weather)",
     bg_custom: "Custom URL…",
     bg_url: "Image URL",
     aspect_ratio: "Aspect ratio (e.g. 16:9, 4:3, 1:1)",
@@ -26,7 +27,8 @@ const TRANSLATIONS = {
     icon_size: "Icon size (px)",
     name: "Name",
     icon: "Icon",
-    centered: "Centered",
+    centered_x: "Centered X",
+    centered_y: "Centered Y",
     remove: "Remove",
     no_sensor: "(no sensor)",
     no_items_card: "Beach Weather Card: no values configured.",
@@ -40,6 +42,7 @@ const TRANSLATIONS = {
     background: "Hintergrundbild",
     bg_default: "Standard (sonnig)",
     bg_sunset: "Sonnenuntergang",
+    bg_auto: "Automatisch (Wetter)",
     bg_custom: "Eigene URL…",
     bg_url: "Bild-URL",
     aspect_ratio: "Seitenverhältnis (z.B. 16:9, 4:3, 1:1)",
@@ -48,7 +51,8 @@ const TRANSLATIONS = {
     icon_size: "Icon-Größe (px)",
     name: "Name",
     icon: "Icon",
-    centered: "Zentriert",
+    centered_x: "X zentriert",
+    centered_y: "Y zentriert",
     remove: "Entfernen",
     no_sensor: "(kein Sensor)",
     no_items_card: "Beach Weather Card: keine Werte konfiguriert.",
@@ -61,10 +65,39 @@ function t(hass, key) {
   return TRANSLATIONS[lang][key] || TRANSLATIONS.en[key] || key;
 }
 
+// HA weather condition -> bundled background key. Only conditions with a
+// dedicated bundled photo need an entry; everything else falls back to the
+// default (sunny) photo. Extend this once more bundled photos exist, e.g.
+// a real night shot for "clear-night" (currently reuses the sunset photo
+// as a placeholder).
+const AUTO_BACKGROUND_MAP = {
+  "clear-night": "sunset",
+};
+
+function findWeatherEntity(hass, deviceId) {
+  if (!hass || !deviceId) return null;
+  const match = Object.values(hass.entities || {}).find(
+    (entity) => entity.device_id === deviceId && entity.entity_id.startsWith("weather.")
+  );
+  return match ? match.entity_id : null;
+}
+
+// "auto" picks a bundled photo from the location's weather.<slug> condition
+// (which is also day/night aware, e.g. "clear-night" vs "sunny") — falls
+// back to the default (sunny) photo if no weather entity/state is available.
+function resolveAutoBackgroundKey(hass, deviceId) {
+  const weatherEntityId = findWeatherEntity(hass, deviceId);
+  const stateObj = weatherEntityId ? hass.states[weatherEntityId] : null;
+  const condition = stateObj ? stateObj.state : null;
+  return AUTO_BACKGROUND_MAP[condition] || "";
+}
+
 // `background_image` config value: "" -> DEFAULT_BACKGROUND, "sunset" -> SUNSET_BACKGROUND,
-// anything else is treated as a literal URL to a user-supplied image.
-function resolveBackground(value) {
+// "auto" -> resolved from the location's live weather condition, anything
+// else is treated as a literal URL to a user-supplied image.
+function resolveBackground(value, hass, deviceId) {
   if (!value) return DEFAULT_BACKGROUND;
+  if (value === "auto") return resolveBackground(resolveAutoBackgroundKey(hass, deviceId));
   if (value === "sunset") return SUNSET_BACKGROUND;
   return value;
 }
@@ -227,9 +260,10 @@ class BeachWeatherCard extends HTMLElement {
     container.style.position = "relative";
     container.style.width = "100%";
     container.style.aspectRatio = (this._config.aspect_ratio || DEFAULT_ASPECT_RATIO).replace(":", "/");
-    container.style.backgroundImage = `url("${resolveBackground(this._config.background_image)}")`;
     container.style.backgroundSize = "cover";
     container.style.backgroundPosition = "center";
+    this._container = container;
+    this._applyBackground();
 
     this._itemNodes = (this._config.items || []).map((item) => {
       const node = this._buildItemNode(item);
@@ -241,11 +275,17 @@ class BeachWeatherCard extends HTMLElement {
     this.appendChild(card);
   }
 
+  _applyBackground() {
+    if (!this._container) return;
+    const url = resolveBackground(this._config.background_image, this._hass, this._config.device_id);
+    this._container.style.backgroundImage = `url("${url}")`;
+  }
+
   _buildItemNode(item) {
     const el = document.createElement("div");
     el.style.position = "absolute";
     el.style.left = item.center_x ? "50%" : `${item.x ?? 50}%`;
-    el.style.top = `${item.y ?? 50}%`;
+    el.style.top = item.center_y ? "50%" : `${item.y ?? 50}%`;
     el.style.transform = "translate(-50%, -50%)";
     el.style.display = "flex";
     el.style.flexDirection = "column";
@@ -297,6 +337,7 @@ class BeachWeatherCard extends HTMLElement {
 
   _updateValues() {
     if (!this._hass || !this._itemNodes) return;
+    if (this._config.background_image === "auto") this._applyBackground();
     for (const node of this._itemNodes) {
       const stateObj = this._hass.states[node.item.entity];
       if (!stateObj) {
@@ -359,7 +400,7 @@ class BeachWeatherCardEditor extends HTMLElement {
         .bwc-item.dragging { cursor: grabbing; outline: 2px dashed #fff; }
         .bwc-item span { font-size: 0.8em; font-weight: 600; }
         .bwc-list { display: flex; flex-direction: column; gap: 8px; }
-        .bwc-item-row { display: grid; grid-template-columns: 1fr auto auto auto auto; gap: 8px; align-items: center; }
+        .bwc-item-row { display: grid; grid-template-columns: 1fr auto auto auto auto auto; gap: 8px; align-items: center; }
         .bwc-add { align-self: flex-start; }
         .bwc-advanced { display: flex; flex-direction: column; gap: 8px; }
         input[type="text"], select { padding: 6px; border-radius: 4px; border: 1px solid var(--divider-color);
@@ -385,6 +426,7 @@ class BeachWeatherCardEditor extends HTMLElement {
             <select id="bg-preset">
               <option value="">${t(this._hass, "bg_default")}</option>
               <option value="sunset">${t(this._hass, "bg_sunset")}</option>
+              <option value="auto">${t(this._hass, "bg_auto")}</option>
               <option value="custom">${t(this._hass, "bg_custom")}</option>
             </select>
           </div>
@@ -473,7 +515,7 @@ class BeachWeatherCardEditor extends HTMLElement {
     deviceSelect.value = this._config.device_id || "";
 
     const bg = this._config.background_image || "";
-    const isPreset = bg === "" || bg === "sunset";
+    const isPreset = bg === "" || bg === "sunset" || bg === "auto";
     this.querySelector("#bg-preset").value = isPreset ? bg : "custom";
     this.querySelector("#bg-custom-row").style.display = isPreset ? "none" : "";
     this.querySelector("#bg-custom").value = isPreset ? "" : bg;
@@ -490,7 +532,11 @@ class BeachWeatherCardEditor extends HTMLElement {
     const canvas = this.querySelector("#canvas");
     canvas.innerHTML = "";
     canvas.style.aspectRatio = (this._config.aspect_ratio || DEFAULT_ASPECT_RATIO).replace(":", "/");
-    canvas.style.backgroundImage = `url("${resolveBackground(this._config.background_image)}")`;
+    canvas.style.backgroundImage = `url("${resolveBackground(
+      this._config.background_image,
+      this._hass,
+      this._config.device_id
+    )}")`;
 
     const grid = document.createElement("div");
     grid.style.position = "absolute";
@@ -505,7 +551,7 @@ class BeachWeatherCardEditor extends HTMLElement {
       const el = document.createElement("div");
       el.className = "bwc-item";
       el.style.left = item.center_x ? "50%" : `${item.x ?? 50}%`;
-      el.style.top = `${item.y ?? 50}%`;
+      el.style.top = item.center_y ? "50%" : `${item.y ?? 50}%`;
       el.style.color = this._config.text_color || DEFAULT_TEXT_COLOR;
 
       if (item.show_icon !== false && item.entity) {
@@ -535,6 +581,7 @@ class BeachWeatherCardEditor extends HTMLElement {
     el.setPointerCapture(ev.pointerId);
 
     const centerX = !!this._config.items[index].center_x;
+    const centerY = !!this._config.items[index].center_y;
 
     const move = (moveEv) => {
       const rect = canvas.getBoundingClientRect();
@@ -549,6 +596,7 @@ class BeachWeatherCardEditor extends HTMLElement {
         y = Math.round(y / GRID_STEP) * GRID_STEP;
       }
       if (centerX) x = 50; // horizontally centered items only move vertically
+      if (centerY) y = 50; // vertically centered items only move horizontally
       el.style.left = `${x}%`;
       el.style.top = `${y}%`;
       this._config.items[index] = { ...this._config.items[index], x, y };
@@ -599,8 +647,13 @@ class BeachWeatherCardEditor extends HTMLElement {
         )
       );
       row.appendChild(
-        this._toggle(t(this._hass, "centered"), item.center_x === true, (checked) =>
+        this._toggle(t(this._hass, "centered_x"), item.center_x === true, (checked) =>
           this._updateItem(index, { center_x: checked })
+        )
+      );
+      row.appendChild(
+        this._toggle(t(this._hass, "centered_y"), item.center_y === true, (checked) =>
+          this._updateItem(index, { center_y: checked })
         )
       );
 
