@@ -189,6 +189,7 @@ class WaterTemperatureSensor(_BeachWeatherSensorBase):
     _attr_device_class = SensorDeviceClass.TEMPERATURE
     _attr_state_class = SensorStateClass.MEASUREMENT
     _attr_native_unit_of_measurement = UnitOfTemperature.CELSIUS
+    _attr_icon = "mdi:pool-thermometer"
 
     def __init__(self, coordinator: MarineCoordinator, entry: ConfigEntry) -> None:
         super().__init__(coordinator, entry, KEY_WATER_TEMPERATURE)

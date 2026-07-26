@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.15.2] - 2026-07-26
+### Changed
+- Water Temperature sensor now uses `mdi:pool-thermometer` instead of the generic device-class thermometer icon
+
 ## [0.15.1] - 2026-07-26
 ### Fixed
 - Hassfest failed on the `http`/`frontend` dependency check the new card relies on — moved them to `after_dependencies` instead of a hard `dependencies` entry (which forced a real frontend startup, breaking the unit test harness)
