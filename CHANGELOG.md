@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.15.5] - 2026-07-26
+### Added
+- Editor's drag canvas now shows a 5% grid and snaps values to it while dragging — makes lining values up on the same row/column much easier. Hold Alt while dragging for free (unsnapped) positioning
+
 ## [0.15.4] - 2026-07-26
 ### Added
 - Hovering a value on the card now shows its entity name as a native tooltip, even when "Name anzeigen" is off

@@ -7,6 +7,7 @@ const DEFAULT_ASPECT_RATIO = "16:9";
 const DEFAULT_TEXT_COLOR = "#ffffff";
 const DEFAULT_FONT_SIZE = 16;
 const DEFAULT_ICON_SIZE = 28;
+const GRID_STEP = 5; // percent — drag positions snap to this grid so values line up easily
 
 // `background_image` config value: "" -> DEFAULT_BACKGROUND, "sunset" -> SUNSET_BACKGROUND,
 // anything else is treated as a literal URL to a user-supplied image.
@@ -282,7 +283,7 @@ class BeachWeatherCardEditor extends HTMLElement {
           <select id="device"></select>
         </div>
         <div class="bwc-row">
-          <label>Vorschau — Werte per Drag positionieren</label>
+          <label>Vorschau — Werte per Drag positionieren (rastet am Raster ein, Alt gedrückt halten für freie Positionierung)</label>
           <div class="bwc-canvas" id="canvas"></div>
         </div>
         <div class="bwc-list" id="list"></div>
@@ -399,6 +400,15 @@ class BeachWeatherCardEditor extends HTMLElement {
     canvas.style.aspectRatio = (this._config.aspect_ratio || DEFAULT_ASPECT_RATIO).replace(":", "/");
     canvas.style.backgroundImage = `url("${resolveBackground(this._config.background_image)}")`;
 
+    const grid = document.createElement("div");
+    grid.style.position = "absolute";
+    grid.style.inset = "0";
+    grid.style.pointerEvents = "none";
+    grid.style.backgroundImage =
+      `repeating-linear-gradient(to right, rgba(255,255,255,0.35) 0 1px, transparent 1px ${GRID_STEP}%),` +
+      `repeating-linear-gradient(to bottom, rgba(255,255,255,0.35) 0 1px, transparent 1px ${GRID_STEP}%)`;
+    canvas.appendChild(grid);
+
     (this._config.items || []).forEach((item, index) => {
       const el = document.createElement("div");
       el.className = "bwc-item";
@@ -438,6 +448,12 @@ class BeachWeatherCardEditor extends HTMLElement {
       let y = ((moveEv.clientY - rect.top) / rect.height) * 100;
       x = Math.min(100, Math.max(0, x));
       y = Math.min(100, Math.max(0, y));
+      // Snap to the grid drawn on the canvas — makes lining values up on
+      // the same row/column a drag instead of a pixel-hunting exercise.
+      if (!moveEv.altKey) {
+        x = Math.round(x / GRID_STEP) * GRID_STEP;
+        y = Math.round(y / GRID_STEP) * GRID_STEP;
+      }
       el.style.left = `${x}%`;
       el.style.top = `${y}%`;
       this._config.items[index] = { ...this._config.items[index], x, y };
