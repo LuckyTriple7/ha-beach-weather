@@ -105,6 +105,31 @@ function entitiesForDevice(hass, deviceId) {
     .sort();
 }
 
+// Maps STUB_ITEMS onto a specific device's actual entity IDs — used both
+// for a freshly added card's stub config and when switching the location
+// dropdown in the editor, so the default layout re-applies instead of the
+// card going empty.
+function buildStubItems(hass, deviceId) {
+  const entities = entitiesForDevice(hass, deviceId);
+  const items = [];
+  for (const stub of STUB_ITEMS) {
+    const match = entities.find((entityId) =>
+      stub.domain ? entityId.startsWith(`${stub.domain}.`) : entityId.startsWith(`sensor.${stub.key}_`)
+    );
+    if (match) {
+      items.push({
+        entity: match,
+        x: stub.x,
+        y: stub.y,
+        show_name: stub.show_name ?? true,
+        show_icon: stub.show_icon ?? true,
+        ...(stub.center_x ? { center_x: true } : {}),
+      });
+    }
+  }
+  return items;
+}
+
 function entityLabel(hass, entityId) {
   const stateObj = hass?.states?.[entityId];
   return stateObj?.attributes?.friendly_name || entityId;
@@ -139,23 +164,6 @@ class BeachWeatherCard extends HTMLElement {
         items: [],
       };
     }
-    const entities = entitiesForDevice(hass, device.id);
-    const items = [];
-    for (const stub of STUB_ITEMS) {
-      const match = entities.find((entityId) =>
-        stub.domain ? entityId.startsWith(`${stub.domain}.`) : entityId.startsWith(`sensor.${stub.key}_`)
-      );
-      if (match) {
-        items.push({
-          entity: match,
-          x: stub.x,
-          y: stub.y,
-          show_name: stub.show_name ?? true,
-          show_icon: stub.show_icon ?? true,
-          ...(stub.center_x ? { center_x: true } : {}),
-        });
-      }
-    }
     return {
       type: `custom:${CARD_TAG}`,
       device_id: device.id,
@@ -164,7 +172,7 @@ class BeachWeatherCard extends HTMLElement {
       text_color: STUB_TEXT_COLOR,
       font_size: STUB_FONT_SIZE,
       icon_size: STUB_ICON_SIZE,
-      items,
+      items: buildStubItems(hass, device.id),
     };
   }
 
@@ -406,7 +414,9 @@ class BeachWeatherCardEditor extends HTMLElement {
     this._built = true;
 
     this.querySelector("#device").addEventListener("change", (ev) => {
-      this._config = { ...this._config, device_id: ev.target.value, items: [] };
+      const deviceId = ev.target.value;
+      const items = deviceId ? buildStubItems(this._hass, deviceId) : [];
+      this._config = { ...this._config, device_id: deviceId, items };
       this._fireChanged();
       this._renderDynamic();
     });

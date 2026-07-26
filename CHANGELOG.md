@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.16.2] - 2026-07-26
+### Fixed
+- Switching the location dropdown in the editor emptied the whole layout instead of re-applying the default — it now rebuilds the default layout against the newly selected location's entities, matching what a freshly added card gets
+
 ## [0.16.1] - 2026-07-26
 ### Changed
 - Reworked the card's default layout (used when adding a new card, before touching the editor) to a fuller 10-value layout — location + weather icon centered on top, then air temperature, UV index, water temperature, wind speed, wave height/period, surf stars and bathing conditions — plus darker default text color and smaller font/icon size, based on a user-refined layout meant to work unchanged across many locations
