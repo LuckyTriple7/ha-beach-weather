@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.15.3] - 2026-07-26
+### Fixed
+- `manifest.json` keys weren't alphabetically sorted (Hassfest requirement), causing CI to fail on the previous release
+
+### Added
+- Configurable font size (`font_size`) and icon size (`icon_size`) for the card's values, editable in the editor's "Erweitert" section
+
 ## [0.15.2] - 2026-07-26
 ### Changed
 - Water Temperature sensor now uses `mdi:pool-thermometer` instead of the generic device-class thermometer icon

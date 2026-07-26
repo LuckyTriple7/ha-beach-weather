@@ -5,6 +5,8 @@ const DEFAULT_BACKGROUND = "/beach_weather_static/beach-weather-background.jpg";
 const SUNSET_BACKGROUND = "/beach_weather_static/beach-weather-background-sunset.jpg";
 const DEFAULT_ASPECT_RATIO = "16:9";
 const DEFAULT_TEXT_COLOR = "#ffffff";
+const DEFAULT_FONT_SIZE = 16;
+const DEFAULT_ICON_SIZE = 28;
 
 // `background_image` config value: "" -> DEFAULT_BACKGROUND, "sunset" -> SUNSET_BACKGROUND,
 // anything else is treated as a literal URL to a user-supplied image.
@@ -90,6 +92,8 @@ class BeachWeatherCard extends HTMLElement {
       aspect_ratio: DEFAULT_ASPECT_RATIO,
       background_image: "",
       text_color: DEFAULT_TEXT_COLOR,
+      font_size: DEFAULT_FONT_SIZE,
+      icon_size: DEFAULT_ICON_SIZE,
       items: [],
       ...config,
     };
@@ -173,22 +177,25 @@ class BeachWeatherCard extends HTMLElement {
       });
     }
 
+    const fontSize = this._config.font_size || DEFAULT_FONT_SIZE;
+    const iconSize = this._config.icon_size || DEFAULT_ICON_SIZE;
+
     let icon = null;
     if (item.show_icon !== false) {
       icon = document.createElement("ha-state-icon");
-      icon.style.setProperty("--mdc-icon-size", "28px");
+      icon.style.setProperty("--mdc-icon-size", `${iconSize}px`);
       el.appendChild(icon);
     }
 
     const value = document.createElement("span");
-    value.style.fontSize = "1.1em";
+    value.style.fontSize = `${fontSize}px`;
     value.style.fontWeight = "600";
     el.appendChild(value);
 
     let name = null;
     if (item.show_name) {
       name = document.createElement("span");
-      name.style.fontSize = "0.75em";
+      name.style.fontSize = `${Math.round(fontSize * 0.7)}px`;
       name.style.opacity = "0.9";
       el.appendChild(name);
     }
@@ -222,6 +229,8 @@ class BeachWeatherCardEditor extends HTMLElement {
       aspect_ratio: DEFAULT_ASPECT_RATIO,
       background_image: "",
       text_color: DEFAULT_TEXT_COLOR,
+      font_size: DEFAULT_FONT_SIZE,
+      icon_size: DEFAULT_ICON_SIZE,
       items: [],
       ...config,
     };
@@ -298,6 +307,14 @@ class BeachWeatherCardEditor extends HTMLElement {
             <label>Schriftfarbe</label>
             <input type="color" id="text-color" />
           </div>
+          <div class="bwc-row">
+            <label>Schriftgröße (px)</label>
+            <input type="number" id="font-size" min="8" max="72" />
+          </div>
+          <div class="bwc-row">
+            <label>Icon-Größe (px)</label>
+            <input type="number" id="icon-size" min="8" max="96" />
+          </div>
         </details>
       </div>
     `;
@@ -331,6 +348,16 @@ class BeachWeatherCardEditor extends HTMLElement {
       this._fireChanged();
       this._renderDynamic();
     });
+    this.querySelector("#font-size").addEventListener("change", (ev) => {
+      this._config = { ...this._config, font_size: Number(ev.target.value) || DEFAULT_FONT_SIZE };
+      this._fireChanged();
+      this._renderDynamic();
+    });
+    this.querySelector("#icon-size").addEventListener("change", (ev) => {
+      this._config = { ...this._config, icon_size: Number(ev.target.value) || DEFAULT_ICON_SIZE };
+      this._fireChanged();
+      this._renderDynamic();
+    });
 
     this._renderDynamic();
   }
@@ -357,6 +384,8 @@ class BeachWeatherCardEditor extends HTMLElement {
     this.querySelector("#bg-custom").value = isPreset ? "" : bg;
     this.querySelector("#aspect").value = this._config.aspect_ratio || DEFAULT_ASPECT_RATIO;
     this.querySelector("#text-color").value = this._config.text_color || DEFAULT_TEXT_COLOR;
+    this.querySelector("#font-size").value = this._config.font_size || DEFAULT_FONT_SIZE;
+    this.querySelector("#icon-size").value = this._config.icon_size || DEFAULT_ICON_SIZE;
 
     this._renderCanvas();
     this._renderList();
@@ -379,7 +408,7 @@ class BeachWeatherCardEditor extends HTMLElement {
         const stateObj = this._hass.states[item.entity];
         if (stateObj) {
           const icon = document.createElement("ha-state-icon");
-          icon.style.setProperty("--mdc-icon-size", "22px");
+          icon.style.setProperty("--mdc-icon-size", `${this._config.icon_size || DEFAULT_ICON_SIZE}px`);
           icon.hass = this._hass;
           icon.stateObj = stateObj;
           el.appendChild(icon);
@@ -387,6 +416,7 @@ class BeachWeatherCardEditor extends HTMLElement {
       }
 
       const value = document.createElement("span");
+      value.style.fontSize = `${this._config.font_size || DEFAULT_FONT_SIZE}px`;
       value.textContent = item.entity ? entityLabel(this._hass, item.entity) : "(kein Sensor)";
       el.appendChild(value);
 
