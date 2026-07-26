@@ -4,6 +4,7 @@ const DOMAIN = "beach_weather";
 const DEFAULT_BACKGROUND = "/beach_weather_static/beach-weather-background.jpg";
 const SUNSET_BACKGROUND = "/beach_weather_static/beach-weather-background-sunset.jpg";
 const DEFAULT_ASPECT_RATIO = "16:9";
+const DEFAULT_TEXT_COLOR = "#ffffff";
 
 // `background_image` config value: "" -> DEFAULT_BACKGROUND, "sunset" -> SUNSET_BACKGROUND,
 // anything else is treated as a literal URL to a user-supplied image.
@@ -88,6 +89,7 @@ class BeachWeatherCard extends HTMLElement {
     this._config = {
       aspect_ratio: DEFAULT_ASPECT_RATIO,
       background_image: "",
+      text_color: DEFAULT_TEXT_COLOR,
       items: [],
       ...config,
     };
@@ -115,10 +117,10 @@ class BeachWeatherCard extends HTMLElement {
     const card = document.createElement("ha-card");
     card.style.overflow = "hidden";
 
-    if (!this._config.device_id) {
+    if (!this._config.items || this._config.items.length === 0) {
       const notice = document.createElement("div");
       notice.style.padding = "16px";
-      notice.textContent = "Beach Weather Card: bitte einen Standort im Editor auswählen.";
+      notice.textContent = "Beach Weather Card: keine Werte konfiguriert.";
       card.appendChild(notice);
       this.appendChild(card);
       this._itemNodes = [];
@@ -154,10 +156,22 @@ class BeachWeatherCard extends HTMLElement {
     el.style.alignItems = "center";
     el.style.gap = "2px";
     el.style.textShadow = "0 1px 3px rgba(0,0,0,0.6)";
-    el.style.color = "#fff";
-    el.style.pointerEvents = "none";
+    el.style.color = this._config.text_color || DEFAULT_TEXT_COLOR;
     el.style.textAlign = "center";
     el.style.whiteSpace = "nowrap";
+    el.style.cursor = "pointer";
+
+    if (item.entity) {
+      el.addEventListener("click", () => {
+        this.dispatchEvent(
+          new CustomEvent("hass-more-info", {
+            detail: { entityId: item.entity },
+            bubbles: true,
+            composed: true,
+          })
+        );
+      });
+    }
 
     let icon = null;
     if (item.show_icon !== false) {
@@ -207,6 +221,7 @@ class BeachWeatherCardEditor extends HTMLElement {
     this._config = {
       aspect_ratio: DEFAULT_ASPECT_RATIO,
       background_image: "",
+      text_color: DEFAULT_TEXT_COLOR,
       items: [],
       ...config,
     };
@@ -279,6 +294,10 @@ class BeachWeatherCardEditor extends HTMLElement {
             <label>Seitenverhältnis (z.B. 16:9, 4:3, 1:1)</label>
             <input type="text" id="aspect" />
           </div>
+          <div class="bwc-row">
+            <label>Schriftfarbe</label>
+            <input type="color" id="text-color" />
+          </div>
         </details>
       </div>
     `;
@@ -307,6 +326,11 @@ class BeachWeatherCardEditor extends HTMLElement {
       this._fireChanged();
       this._renderDynamic();
     });
+    this.querySelector("#text-color").addEventListener("change", (ev) => {
+      this._config = { ...this._config, text_color: ev.target.value || DEFAULT_TEXT_COLOR };
+      this._fireChanged();
+      this._renderDynamic();
+    });
 
     this._renderDynamic();
   }
@@ -332,6 +356,7 @@ class BeachWeatherCardEditor extends HTMLElement {
     this.querySelector("#bg-custom-row").style.display = isPreset ? "none" : "";
     this.querySelector("#bg-custom").value = isPreset ? "" : bg;
     this.querySelector("#aspect").value = this._config.aspect_ratio || DEFAULT_ASPECT_RATIO;
+    this.querySelector("#text-color").value = this._config.text_color || DEFAULT_TEXT_COLOR;
 
     this._renderCanvas();
     this._renderList();
@@ -348,6 +373,7 @@ class BeachWeatherCardEditor extends HTMLElement {
       el.className = "bwc-item";
       el.style.left = `${item.x ?? 50}%`;
       el.style.top = `${item.y ?? 50}%`;
+      el.style.color = this._config.text_color || DEFAULT_TEXT_COLOR;
 
       if (item.show_icon !== false && item.entity) {
         const stateObj = this._hass.states[item.entity];

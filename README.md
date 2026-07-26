@@ -90,7 +90,7 @@ The integration ships its own card, `custom:beach-weather-card` — it registers
 2. In the card editor, pick a **location** (one of your Beach Weather devices)
 3. Drag the value chips directly on the preview image to position them
 4. Per value: choose the sensor, toggle whether the name is shown, toggle whether the icon is shown, or remove it
-5. Under **Erweitert**: pick one of the two bundled background photos (sunny / sunset) or supply your own image URL, and adjust the card's aspect ratio (e.g. `16:9`, `4:3`, `1:1`) — the card's width is always responsive to the dashboard column
+5. Under **Erweitert**: pick one of the two bundled background photos (sunny / sunset) or supply your own image URL, adjust the card's aspect ratio (e.g. `16:9`, `4:3`, `1:1`) and the text color — the card's width is always responsive to the dashboard column
 
 Example YAML:
 
@@ -99,6 +99,7 @@ type: custom:beach-weather-card
 device_id: 3f8a1c2b9e4d5f6a7b8c9d0e1f2a3b4c
 aspect_ratio: "16:9"
 background_image: ""   # "" = sunny (default), "sunset" = bundled sunset photo, or any image URL
+text_color: "#ffffff"
 items:
   - entity: sensor.water_temperature_platja_de_muro
     x: 12

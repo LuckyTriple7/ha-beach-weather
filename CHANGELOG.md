@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.15.1] - 2026-07-26
+### Fixed
+- Hassfest failed on the `http`/`frontend` dependency check the new card relies on — moved them to `after_dependencies` instead of a hard `dependencies` entry (which forced a real frontend startup, breaking the unit test harness)
+- The card refused to render without a `device_id` set — that field is only needed by the editor's pickers, not by rendering itself, so hand-written YAML with just `items:` now works
+
+### Added
+- Configurable text color for the card's values (`text_color`, default white), editable via a color picker in the editor's "Erweitert" section
+- Clicking a value on the card now opens that entity's more-info dialog, same as tapping any other HA entity
+
 ## [0.15.0] - 2026-07-26
 ### Added
 - New Lovelace card (`custom:beach-weather-card`), bundled with the integration and auto-registered — no manual resource setup needed. Pick a location and drag sensor values (icon + value, name optional) freely onto a beach photo background, right in the card's visual editor. Ships with two default background photos (sunny / sunset), a custom image URL is also supported. Card width is responsive, with a configurable aspect ratio
