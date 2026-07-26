@@ -35,7 +35,8 @@ function devicesForIntegration(hass) {
 function entitiesForDevice(hass, deviceId) {
   if (!hass || !deviceId) return [];
   return Object.values(hass.entities || {})
-    .filter((entity) => entity.device_id === deviceId)
+    // button entities (e.g. "Update Now") have no state worth displaying
+    .filter((entity) => entity.device_id === deviceId && !entity.entity_id.startsWith("button."))
     .map((entity) => entity.entity_id)
     .sort();
 }
@@ -216,6 +217,7 @@ class BeachWeatherCard extends HTMLElement {
         node.icon.stateObj = stateObj;
       }
       node.value.textContent = formatState(this._hass, stateObj);
+      node.el.title = stateObj.attributes.friendly_name || node.item.entity;
       if (node.name) {
         node.name.textContent = stateObj.attributes.friendly_name || node.item.entity;
       }

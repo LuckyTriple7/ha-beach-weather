@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.15.4] - 2026-07-26
+### Added
+- Hovering a value on the card now shows its entity name as a native tooltip, even when "Name anzeigen" is off
+
+### Fixed
+- Button entities (e.g. "Update Now") no longer show up in the card's value picker — they have no state worth displaying
+
 ## [0.15.3] - 2026-07-26
 ### Fixed
 - `manifest.json` keys weren't alphabetically sorted (Hassfest requirement), causing CI to fail on the previous release
