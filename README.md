@@ -93,6 +93,8 @@ The integration ships its own card, `custom:beach-weather-card` — it registers
 4. Per value: choose the sensor, toggle whether the name is shown, toggle whether the icon is shown, toggle horizontal/vertical centering (locks x and/or y to 50%, e.g. for a title stacked above the weather), or remove it
 5. Under **Advanced**: pick a background — the three bundled photos (sunny / sunset / night), **Automatic (day/night)** (picks the sunny or night photo based on the location's live `sensor.is_day`) — or supply your own image URL. Also adjust the card's aspect ratio (e.g. `16:9`, `4:3`, `1:1`), font size, icon size, and separately the text color for day and for night — the night color is used whenever `sensor.is_day` is "night", regardless of which background is selected, so values stay legible on a dark photo. The card's width is always responsive to the dashboard column
 
+A UV Index value placed on the card automatically hides itself at night (`sensor.is_day` = "night") instead of showing a meaningless 0 — no config needed.
+
 Example YAML:
 
 ```yaml
@@ -151,3 +153,5 @@ Each location supports HA's **Download Diagnostics** (Settings → Devices & Ser
 ## Error handling & backoff
 
 If a request fails, the affected sensors go `unavailable` until the next successful update; other locations/APIs are unaffected. On HTTP 403 the coordinator backs off for 30 minutes, on 429 for 15 minutes, on other HTTP errors for 5 minutes, before it even attempts another request — this protects against repeatedly hammering an already-blocking Open-Meteo endpoint. The **Update Now** button ignores this backoff and the shared rate limiter entirely: pressing it always fires an immediate request, since a deliberate manual action should not be silently swallowed by the automatic burst protection.
+
+Each location's very first data fetch runs in the background and never blocks Home Assistant's own startup — with many locations sharing the global rate limiter, entities simply come up `unavailable` and populate once their turn in the queue comes up, usually within a minute or two.
