@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.19.0] - 2026-07-27
+### Added
+- New `sensor.visibility` (horizontal visibility, km) — was already part of the Forecast API response but had no sensor. Also added to the `weather.<slug>` entity's `visibility` attribute
+
 ## [0.18.1] - 2026-07-27
 ### Fixed
 - The UV Index value now auto-hides on the card at night (`sensor.is_day` = "night") instead of showing a meaningless 0 — applies wherever a UV Index sensor is placed on the card, no config needed

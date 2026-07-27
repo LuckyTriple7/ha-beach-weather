@@ -96,6 +96,7 @@
       "pressure": { "name": "Pressure" },
       "cloud_cover": { "name": "Cloud Cover" },
       "uv_index": { "name": "UV Index" },
+      "visibility": { "name": "Visibility" },
       "is_day": {
         "name": "Day/Night",
         "state": {

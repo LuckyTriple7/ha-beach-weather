@@ -21,6 +21,7 @@ from homeassistant.components.weather import (
 )
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
+    UnitOfLength,
     UnitOfPrecipitationDepth,
     UnitOfPressure,
     UnitOfSpeed,
@@ -158,6 +159,7 @@ class BeachWeatherEntity(CoordinatorEntity, WeatherEntity):
     _attr_native_pressure_unit = UnitOfPressure.HPA
     _attr_native_wind_speed_unit = UnitOfSpeed.KILOMETERS_PER_HOUR
     _attr_native_precipitation_unit = UnitOfPrecipitationDepth.MILLIMETERS
+    _attr_native_visibility_unit = UnitOfLength.KILOMETERS
     _attr_supported_features = (
         WeatherEntityFeature.FORECAST_DAILY | WeatherEntityFeature.FORECAST_HOURLY
     )
@@ -215,6 +217,13 @@ class BeachWeatherEntity(CoordinatorEntity, WeatherEntity):
     @property
     def uv_index(self) -> float | None:
         return self.coordinator.data.get("uv_index") if self.available else None
+
+    @property
+    def native_visibility(self) -> float | None:
+        if not self.available:
+            return None
+        visibility = self.coordinator.data.get("visibility")
+        return round(visibility / 1000, 1) if visibility is not None else None
 
     async def async_forecast_daily(self) -> list[Forecast] | None:
         if not self.available:

@@ -52,6 +52,12 @@ class TestSensorSetup:
         assert state is not None
         assert state.state == "23.8"
 
+    async def test_visibility_state(self, hass, mock_marine_update, mock_forecast_update):
+        await _setup_entry(hass, mock_marine_update, mock_forecast_update)
+        state = hass.states.get(f"sensor.visibility_{SLUG}")
+        assert state is not None
+        assert state.state == "24.1"  # 24140 m -> km, rounded
+
     async def test_bathing_conditions_uses_default_thresholds(
         self, hass, mock_marine_update, mock_forecast_update
     ):

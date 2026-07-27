@@ -49,6 +49,7 @@ MOCK_FORECAST_CURRENT = {
     "cloud_cover": 92,
     "uv_index": 6.15,
     "is_day": 1,
+    "visibility": 24140.0,
     "_hourly": {
         "time": ["2026-07-22T16:00", "2026-07-22T17:00"],
         "temperature_2m": [27.0, 26.5],

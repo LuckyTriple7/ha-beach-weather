@@ -96,6 +96,7 @@
       "pressure": { "name": "Luftdruck" },
       "cloud_cover": { "name": "Bewölkung" },
       "uv_index": { "name": "UV-Index" },
+      "visibility": { "name": "Sichtweite" },
       "is_day": {
         "name": "Tag/Nacht",
         "state": {

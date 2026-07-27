@@ -64,6 +64,7 @@ from .const import (
     KEY_TOO_COLD_MAX,
     KEY_UV_INDEX,
     KEY_VERY_GOOD_TEMP_MIN,
+    KEY_VISIBILITY,
     KEY_WATER_TEMPERATURE,
     KEY_WAVE_DIRECTION,
     KEY_WAVE_HEIGHT,
@@ -117,6 +118,7 @@ async def async_setup_entry(
             PressureSensor(forecast, entry),
             CloudCoverSensor(forecast, entry),
             UvIndexSensor(forecast, entry),
+            VisibilitySensor(forecast, entry),
             IsDaySensor(forecast, entry),
             WeatherConditionSensor(forecast, entry),
             TimestampWindSensor(forecast, entry),
@@ -611,6 +613,28 @@ class UvIndexSensor(_BeachWeatherSensorBase):
         if not self.available:
             return None
         return round(self.coordinator.data["uv_index"], 1)
+
+
+class VisibilitySensor(_BeachWeatherSensorBase):
+    """Horizontal visibility — Open-Meteo reports meters, exposed here in km."""
+
+    _attr_device_class = SensorDeviceClass.DISTANCE
+    _attr_state_class = SensorStateClass.MEASUREMENT
+    _attr_native_unit_of_measurement = UnitOfLength.KILOMETERS
+    _attr_icon = "mdi:eye-outline"
+
+    def __init__(self, coordinator: ForecastCoordinator, entry: ConfigEntry) -> None:
+        super().__init__(coordinator, entry, KEY_VISIBILITY)
+
+    @property
+    def available(self) -> bool:
+        return super().available and self.coordinator.data.get("visibility") is not None
+
+    @property
+    def native_value(self) -> float | None:
+        if not self.available:
+            return None
+        return round(self.coordinator.data["visibility"] / 1000, 1)
 
 
 class IsDaySensor(_BeachWeatherSensorBase):

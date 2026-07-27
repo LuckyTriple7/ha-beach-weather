@@ -119,3 +119,4 @@ class TestWeatherEntitySetup:
         assert state.state == "sunny"  # weather_code=1, is_day=1 in MOCK_FORECAST_CURRENT
         assert state.attributes["temperature"] == 27.4
         assert state.attributes["humidity"] == 67
+        assert state.attributes["visibility"] == 24.1  # 24140 m -> km, rounded

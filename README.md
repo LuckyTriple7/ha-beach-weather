@@ -61,6 +61,7 @@ One HA device per location, named after the location. All entity IDs include a s
 | `sensor.pressure_platja_de_muro` | Sea-level air pressure (hPa) |
 | `sensor.cloud_cover_platja_de_muro` | Cloud cover (%) |
 | `sensor.uv_index_platja_de_muro` | UV index |
+| `sensor.visibility_platja_de_muro` | Horizontal visibility (km) |
 | `sensor.is_day_platja_de_muro` | Day/Night |
 | `sensor.weather_condition_platja_de_muro` | Human-readable weather condition (from WMO weather code), with the raw code as an attribute |
 | `sensor.timestamp_wind_platja_de_muro` | Timestamp of the wind/weather data |
@@ -80,7 +81,7 @@ The 7 Marine sensors (water temperature, wave height/direction/period, swell hei
 
 ## Weather entity
 
-`weather.<slug>` is a standard Home Assistant weather entity — works with the built-in weather card, `weather.get_forecasts`, and anything else that expects a normal `weather.*` entity. It covers only the atmospheric side (temperature, wind, pressure, humidity, cloud cover, UV index, precipitation, condition) from the Forecast API's `current`/`hourly`/`daily` blocks — wave/swell/surf data has no place in HA's weather model and stays on the dedicated sensors above. WMO weather codes are mapped to HA's standard condition strings (`sunny`/`clear-night` for codes 0-1, day/night aware; `partlycloudy`, `cloudy`, `fog`, `rainy`, `pouring`, `snowy`, `snowy-rainy`, `lightning`, `lightning-rainy` for the rest).
+`weather.<slug>` is a standard Home Assistant weather entity — works with the built-in weather card, `weather.get_forecasts`, and anything else that expects a normal `weather.*` entity. It covers only the atmospheric side (temperature, wind, pressure, humidity, cloud cover, UV index, visibility, precipitation, condition) from the Forecast API's `current`/`hourly`/`daily` blocks — wave/swell/surf data has no place in HA's weather model and stays on the dedicated sensors above. WMO weather codes are mapped to HA's standard condition strings (`sunny`/`clear-night` for codes 0-1, day/night aware; `partlycloudy`, `cloudy`, `fog`, `rainy`, `pouring`, `snowy`, `snowy-rainy`, `lightning`, `lightning-rainy` for the rest).
 
 ## Lovelace Card
 

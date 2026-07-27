@@ -32,7 +32,7 @@ FORECAST_API_URL = "https://api.open-meteo.com/v1/forecast"
 FORECAST_CURRENT_PARAMS = (
     "wind_speed_10m,wind_direction_10m,wind_gusts_10m,"
     "temperature_2m,weather_code,relative_humidity_2m,precipitation,rain,"
-    "showers,pressure_msl,cloud_cover,uv_index,is_day"
+    "showers,pressure_msl,cloud_cover,uv_index,is_day,visibility"
 )
 # Only requested by ForecastCoordinator, for the weather.<slug> entity's forecast.
 FORECAST_HOURLY_PARAMS = (
@@ -81,6 +81,7 @@ KEY_PRESSURE = "pressure"
 KEY_CLOUD_COVER = "cloud_cover"
 KEY_UV_INDEX = "uv_index"
 KEY_IS_DAY = "is_day"
+KEY_VISIBILITY = "visibility"
 
 IS_DAY_OPTIONS = ["day", "night"]
 KEY_SURF_SCORE = "surf_score"
