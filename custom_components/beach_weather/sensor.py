@@ -47,6 +47,8 @@ from .const import (
     KEY_LAST_STATUS_WIND,
     KEY_LOCATION,
     KEY_MODERATE_WAVE_MAX,
+    KEY_OCEAN_CURRENT_DIRECTION,
+    KEY_OCEAN_CURRENT_VELOCITY,
     KEY_PERFECT_PERIOD_MIN,
     KEY_PERFECT_TEMP_MIN,
     KEY_PRECIPITATION,
@@ -79,6 +81,9 @@ from .const import (
     KEY_WIND_DIRECTION,
     KEY_WIND_GUSTS,
     KEY_WIND_SPEED,
+    KEY_WIND_WAVE_DIRECTION,
+    KEY_WIND_WAVE_HEIGHT,
+    KEY_WIND_WAVE_PERIOD,
     SIGNAL_SURF_WEIGHTS_UPDATED,
     SIGNAL_THRESHOLDS_UPDATED,
     SURF_CONDITION_OPTIONS,
@@ -106,6 +111,11 @@ async def async_setup_entry(
             SwellHeightSensor(marine, entry),
             SwellDirectionSensor(marine, entry),
             SwellPeriodSensor(marine, entry),
+            WindWaveHeightSensor(marine, entry),
+            WindWaveDirectionSensor(marine, entry),
+            WindWavePeriodSensor(marine, entry),
+            OceanCurrentVelocitySensor(marine, entry),
+            OceanCurrentDirectionSensor(marine, entry),
             TimestampMarineSensor(marine, entry),
             WindSpeedSensor(forecast, entry),
             WindGustsSensor(forecast, entry),
@@ -381,6 +391,139 @@ class SwellPeriodSensor(_BeachWeatherSensorBase):
             return {}
         return {
             "forecast": _hourly_forecast(self.coordinator.data.get("_hourly"), "swell_wave_period")
+        }
+
+
+class WindWaveHeightSensor(_BeachWeatherSensorBase):
+    """Wind-wave height — local wind-driven chop, distinct from swell."""
+
+    _attr_icon = "mdi:waves"
+    _attr_state_class = SensorStateClass.MEASUREMENT
+    _attr_native_unit_of_measurement = UnitOfLength.METERS
+
+    def __init__(self, coordinator: MarineCoordinator, entry: ConfigEntry) -> None:
+        super().__init__(coordinator, entry, KEY_WIND_WAVE_HEIGHT)
+
+    @property
+    def available(self) -> bool:
+        return super().available and self.coordinator.data.get("wind_wave_height") is not None
+
+    @property
+    def native_value(self) -> float | None:
+        if not self.available:
+            return None
+        return round(self.coordinator.data["wind_wave_height"], 2)
+
+    @property
+    def extra_state_attributes(self) -> dict:
+        if not self.available:
+            return {}
+        return {"forecast": _hourly_forecast(self.coordinator.data.get("_hourly"), "wind_wave_height")}
+
+
+class WindWaveDirectionSensor(_BeachWeatherSensorBase):
+    _attr_icon = "mdi:compass-outline"
+    _attr_state_class = SensorStateClass.MEASUREMENT
+    _attr_native_unit_of_measurement = DEGREE
+
+    def __init__(self, coordinator: MarineCoordinator, entry: ConfigEntry) -> None:
+        super().__init__(coordinator, entry, KEY_WIND_WAVE_DIRECTION)
+
+    @property
+    def available(self) -> bool:
+        return super().available and self.coordinator.data.get("wind_wave_direction") is not None
+
+    @property
+    def native_value(self) -> int | None:
+        if not self.available:
+            return None
+        return round(self.coordinator.data["wind_wave_direction"])
+
+    @property
+    def extra_state_attributes(self) -> dict:
+        if not self.available:
+            return {}
+        return {
+            "forecast": _hourly_forecast(self.coordinator.data.get("_hourly"), "wind_wave_direction")
+        }
+
+
+class WindWavePeriodSensor(_BeachWeatherSensorBase):
+    _attr_icon = "mdi:sine-wave"
+    _attr_state_class = SensorStateClass.MEASUREMENT
+    _attr_native_unit_of_measurement = UnitOfTime.SECONDS
+
+    def __init__(self, coordinator: MarineCoordinator, entry: ConfigEntry) -> None:
+        super().__init__(coordinator, entry, KEY_WIND_WAVE_PERIOD)
+
+    @property
+    def available(self) -> bool:
+        return super().available and self.coordinator.data.get("wind_wave_period") is not None
+
+    @property
+    def native_value(self) -> float | None:
+        if not self.available:
+            return None
+        return round(self.coordinator.data["wind_wave_period"], 2)
+
+    @property
+    def extra_state_attributes(self) -> dict:
+        if not self.available:
+            return {}
+        return {"forecast": _hourly_forecast(self.coordinator.data.get("_hourly"), "wind_wave_period")}
+
+
+class OceanCurrentVelocitySensor(_BeachWeatherSensorBase):
+    _attr_icon = "mdi:waves-arrow-right"
+    _attr_state_class = SensorStateClass.MEASUREMENT
+    _attr_native_unit_of_measurement = UnitOfSpeed.KILOMETERS_PER_HOUR
+
+    def __init__(self, coordinator: MarineCoordinator, entry: ConfigEntry) -> None:
+        super().__init__(coordinator, entry, KEY_OCEAN_CURRENT_VELOCITY)
+
+    @property
+    def available(self) -> bool:
+        return super().available and self.coordinator.data.get("ocean_current_velocity") is not None
+
+    @property
+    def native_value(self) -> float | None:
+        if not self.available:
+            return None
+        return round(self.coordinator.data["ocean_current_velocity"], 2)
+
+    @property
+    def extra_state_attributes(self) -> dict:
+        if not self.available:
+            return {}
+        return {
+            "forecast": _hourly_forecast(self.coordinator.data.get("_hourly"), "ocean_current_velocity")
+        }
+
+
+class OceanCurrentDirectionSensor(_BeachWeatherSensorBase):
+    _attr_icon = "mdi:compass-outline"
+    _attr_state_class = SensorStateClass.MEASUREMENT
+    _attr_native_unit_of_measurement = DEGREE
+
+    def __init__(self, coordinator: MarineCoordinator, entry: ConfigEntry) -> None:
+        super().__init__(coordinator, entry, KEY_OCEAN_CURRENT_DIRECTION)
+
+    @property
+    def available(self) -> bool:
+        return super().available and self.coordinator.data.get("ocean_current_direction") is not None
+
+    @property
+    def native_value(self) -> int | None:
+        if not self.available:
+            return None
+        return round(self.coordinator.data["ocean_current_direction"])
+
+    @property
+    def extra_state_attributes(self) -> dict:
+        if not self.available:
+            return {}
+        return {
+            "forecast": _hourly_forecast(self.coordinator.data.get("_hourly"), "ocean_current_direction")
         }
 
 

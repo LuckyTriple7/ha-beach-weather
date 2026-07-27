@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.20.0] - 2026-07-27
+### Added
+- 5 new Marine API sensors, no extra request needed (same `current`/`hourly` call already made): `sensor.wind_wave_height`, `sensor.wind_wave_direction`, `sensor.wind_wave_period` (local wind-driven chop, separate from swell), `sensor.ocean_current_velocity`, `sensor.ocean_current_direction` — each with the same 48h `forecast` attribute as the other Marine sensors
+
 ## [0.19.1] - 2026-07-27
 ### Changed
 - Each location's first data fetch no longer blocks Home Assistant startup — with 20+ locations sharing the global rate limiter (min. 3s between any two requests), waiting for every location's first refresh before startup could finish could add minutes to boot. Entities now come up as "unavailable" and populate in the background as their turn in the queue comes up; the regular polling cycle still retries on failure the same as before

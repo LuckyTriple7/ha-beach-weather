@@ -59,6 +59,18 @@ class TestSensorSetup:
         assert state is not None
         assert state.state == "23.8"
 
+    async def test_wind_wave_height_state(self, hass, mock_marine_update, mock_forecast_update):
+        await _setup_entry(hass, mock_marine_update, mock_forecast_update)
+        state = hass.states.get(f"sensor.wind_wave_height_{SLUG}")
+        assert state is not None
+        assert state.state == "0.3"
+
+    async def test_ocean_current_velocity_state(self, hass, mock_marine_update, mock_forecast_update):
+        await _setup_entry(hass, mock_marine_update, mock_forecast_update)
+        state = hass.states.get(f"sensor.ocean_current_velocity_{SLUG}")
+        assert state is not None
+        assert state.state == "1.4"
+
     async def test_visibility_state(self, hass, mock_marine_update, mock_forecast_update):
         await _setup_entry(hass, mock_marine_update, mock_forecast_update)
         state = hass.states.get(f"sensor.visibility_{SLUG}")

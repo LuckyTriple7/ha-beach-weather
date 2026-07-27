@@ -49,6 +49,11 @@ One HA device per location, named after the location. All entity IDs include a s
 | `sensor.swell_height_platja_de_muro` | Swell wave height (m) — surf-relevant, separate from local wind chop |
 | `sensor.swell_direction_platja_de_muro` | Swell wave direction (°) |
 | `sensor.swell_period_platja_de_muro` | Swell period (s) — surf-quality signal, distinct from the mixed wave period; used by the Surf Score |
+| `sensor.wind_wave_height_platja_de_muro` | Wind-wave height (m) — local wind-driven chop, separate from swell |
+| `sensor.wind_wave_direction_platja_de_muro` | Wind-wave direction (°) |
+| `sensor.wind_wave_period_platja_de_muro` | Wind-wave period (s) |
+| `sensor.ocean_current_velocity_platja_de_muro` | Ocean current velocity (km/h) |
+| `sensor.ocean_current_direction_platja_de_muro` | Ocean current direction (°) |
 | `sensor.timestamp_platja_de_muro` | Timestamp of the marine data |
 | `sensor.wind_speed_platja_de_muro` | Wind speed (km/h) |
 | `sensor.wind_gusts_platja_de_muro` | Wind gusts (km/h) |
@@ -77,7 +82,7 @@ One HA device per location, named after the location. All entity IDs include a s
 
 A sensor becomes `unavailable` when Open-Meteo doesn't return a value for that field, or when the request fails. The two "Last Status" sensors are the exception — they stay visible even after a failed update, showing the raw status code (e.g. `403`) so a rate-limit issue is diagnosable without digging through the log.
 
-The 7 Marine sensors (water temperature, wave height/direction/period, swell height/direction/period) each carry a `forecast` attribute — the next 48 hours as `[{"time": ..., "value": ...}, ...]`, `null` if no forecast data is available yet.
+The 12 Marine sensors (water temperature, wave height/direction/period, swell height/direction/period, wind-wave height/direction/period, ocean current velocity/direction) each carry a `forecast` attribute — the next 48 hours as `[{"time": ..., "value": ...}, ...]`, `null` if no forecast data is available yet.
 
 ## Weather entity
 

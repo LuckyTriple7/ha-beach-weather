@@ -18,13 +18,17 @@ MAX_SCAN_INTERVAL = 3600
 MARINE_API_URL = "https://marine-api.open-meteo.com/v1/marine"
 MARINE_CURRENT_PARAMS = (
     "wave_height,wave_direction,wave_period,sea_surface_temperature,"
-    "swell_wave_height,swell_wave_direction,swell_wave_period"
+    "swell_wave_height,swell_wave_direction,swell_wave_period,"
+    "wind_wave_height,wind_wave_direction,wind_wave_period,"
+    "ocean_current_velocity,ocean_current_direction"
 )
 # Only requested by MarineCoordinator, for the "forecast" attribute on the
 # wave/swell/water-temperature sensors.
 MARINE_HOURLY_PARAMS = (
     "wave_height,wave_direction,wave_period,sea_surface_temperature,"
-    "swell_wave_height,swell_wave_direction,swell_wave_period"
+    "swell_wave_height,swell_wave_direction,swell_wave_period,"
+    "wind_wave_height,wind_wave_direction,wind_wave_period,"
+    "ocean_current_velocity,ocean_current_direction"
 )
 MARINE_FORECAST_HOURS = 48
 
@@ -60,6 +64,11 @@ KEY_WAVE_PERIOD = "wave_period"
 KEY_SWELL_HEIGHT = "swell_height"
 KEY_SWELL_DIRECTION = "swell_direction"
 KEY_SWELL_PERIOD = "swell_period"
+KEY_WIND_WAVE_HEIGHT = "wind_wave_height"
+KEY_WIND_WAVE_DIRECTION = "wind_wave_direction"
+KEY_WIND_WAVE_PERIOD = "wind_wave_period"
+KEY_OCEAN_CURRENT_VELOCITY = "ocean_current_velocity"
+KEY_OCEAN_CURRENT_DIRECTION = "ocean_current_direction"
 KEY_TIMESTAMP_MARINE = "timestamp"
 KEY_WIND_SPEED = "wind_speed"
 KEY_WIND_GUSTS = "wind_gusts"

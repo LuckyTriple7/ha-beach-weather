@@ -22,6 +22,11 @@ MOCK_MARINE_CURRENT = {
     "swell_wave_height": 0.6,
     "swell_wave_direction": 210,
     "swell_wave_period": 9.2,
+    "wind_wave_height": 0.3,
+    "wind_wave_direction": 45,
+    "wind_wave_period": 3.1,
+    "ocean_current_velocity": 1.4,
+    "ocean_current_direction": 95,
     "_hourly": {
         "time": _MARINE_HOURLY_TIMES,
         "wave_height": [0.8, 0.9, 1.0],
@@ -31,6 +36,11 @@ MOCK_MARINE_CURRENT = {
         "swell_wave_height": [0.6, 0.6, 0.7],
         "swell_wave_direction": [210, 211, 212],
         "swell_wave_period": [9.2, 9.3, 9.4],
+        "wind_wave_height": [0.3, 0.3, 0.4],
+        "wind_wave_direction": [45, 46, 47],
+        "wind_wave_period": [3.1, 3.2, 3.3],
+        "ocean_current_velocity": [1.4, 1.5, 1.6],
+        "ocean_current_direction": [95, 96, 97],
     },
 }
 
