@@ -3,8 +3,10 @@ const EDITOR_TAG = "beach-weather-card-editor";
 const DOMAIN = "beach_weather";
 const DEFAULT_BACKGROUND = "/beach_weather_static/beach-weather-background.jpg";
 const SUNSET_BACKGROUND = "/beach_weather_static/beach-weather-background-sunset.jpg";
+const NIGHT_BACKGROUND = "/beach_weather_static/beach-weather-background-night.jpg";
 const DEFAULT_ASPECT_RATIO = "16:9";
 const DEFAULT_TEXT_COLOR = "#ffffff";
+const DEFAULT_TEXT_COLOR_NIGHT = "#ffffff";
 const DEFAULT_FONT_SIZE = 16;
 const DEFAULT_ICON_SIZE = 28;
 const GRID_STEP = 5; // percent — drag positions snap to this grid so values line up easily
@@ -19,10 +21,12 @@ const TRANSLATIONS = {
     bg_default: "Default (sunny)",
     bg_sunset: "Sunset",
     bg_auto: "Automatic (weather)",
+    bg_night: "Night",
     bg_custom: "Custom URL…",
     bg_url: "Image URL",
     aspect_ratio: "Aspect ratio (e.g. 16:9, 4:3, 1:1)",
     text_color: "Text color",
+    text_color_night: "Text color (night)",
     font_size: "Font size (px)",
     icon_size: "Icon size (px)",
     name: "Name",
@@ -43,10 +47,12 @@ const TRANSLATIONS = {
     bg_default: "Standard (sonnig)",
     bg_sunset: "Sonnenuntergang",
     bg_auto: "Automatisch (Wetter)",
+    bg_night: "Nacht",
     bg_custom: "Eigene URL…",
     bg_url: "Bild-URL",
     aspect_ratio: "Seitenverhältnis (z.B. 16:9, 4:3, 1:1)",
     text_color: "Schriftfarbe",
+    text_color_night: "Schriftfarbe (Nachts)",
     font_size: "Schriftgröße (px)",
     icon_size: "Icon-Größe (px)",
     name: "Name",
@@ -67,11 +73,9 @@ function t(hass, key) {
 
 // HA weather condition -> bundled background key. Only conditions with a
 // dedicated bundled photo need an entry; everything else falls back to the
-// default (sunny) photo. Extend this once more bundled photos exist, e.g.
-// a real night shot for "clear-night" (currently reuses the sunset photo
-// as a placeholder).
+// default (sunny) photo.
 const AUTO_BACKGROUND_MAP = {
-  night: "sunset",
+  night: "night",
 };
 
 function findEntityByKey(hass, deviceId, key) {
@@ -82,24 +86,39 @@ function findEntityByKey(hass, deviceId, key) {
   return match ? match.entity_id : null;
 }
 
+function isNight(hass, deviceId) {
+  const isDayEntityId = findEntityByKey(hass, deviceId, "is_day");
+  const stateObj = isDayEntityId ? hass.states[isDayEntityId] : null;
+  return stateObj ? stateObj.state === "night" : false;
+}
+
 // "auto" picks a bundled photo from the location's sensor.is_day (values
 // "day"/"night", from Open-Meteo's raw is_day field) — this stays correct
 // for e.g. a rainy night, unlike inferring day/night from the weather
 // condition string, which HA only distinguishes for "clear-night".
 function resolveAutoBackgroundKey(hass, deviceId) {
-  const isDayEntityId = findEntityByKey(hass, deviceId, "is_day");
-  const stateObj = isDayEntityId ? hass.states[isDayEntityId] : null;
-  return AUTO_BACKGROUND_MAP[stateObj ? stateObj.state : null] || "";
+  return AUTO_BACKGROUND_MAP[isNight(hass, deviceId) ? "night" : "day"] || "";
 }
 
 // `background_image` config value: "" -> DEFAULT_BACKGROUND, "sunset" -> SUNSET_BACKGROUND,
-// "auto" -> resolved from the location's is_day sensor, anything else is
-// treated as a literal URL to a user-supplied image.
+// "night" -> NIGHT_BACKGROUND, "auto" -> resolved from the location's is_day
+// sensor, anything else is treated as a literal URL to a user-supplied image.
 function resolveBackground(value, hass, deviceId) {
   if (!value) return DEFAULT_BACKGROUND;
   if (value === "auto") return resolveBackground(resolveAutoBackgroundKey(hass, deviceId));
   if (value === "sunset") return SUNSET_BACKGROUND;
+  if (value === "night") return NIGHT_BACKGROUND;
   return value;
+}
+
+// Text color follows the location's actual is_day state (not the selected
+// background preset) so it stays legible at night even against a fixed/
+// custom background — falls back to the day color if no night color is set.
+function resolveTextColor(config, hass, deviceId) {
+  if (isNight(hass, deviceId)) {
+    return config.text_color_night || config.text_color || DEFAULT_TEXT_COLOR_NIGHT;
+  }
+  return config.text_color || DEFAULT_TEXT_COLOR;
 }
 
 // Sensor-key prefixes (see const.py) used to pre-fill a freshly added card
@@ -119,6 +138,7 @@ const STUB_ITEMS = [
   { key: "bathing_conditions", x: 83.37, y: 81.51, show_name: false, show_icon: true },
 ];
 const STUB_TEXT_COLOR = "#0a0000";
+const STUB_TEXT_COLOR_NIGHT = "#ffffff";
 const STUB_FONT_SIZE = 13;
 const STUB_ICON_SIZE = 24;
 
@@ -192,6 +212,7 @@ class BeachWeatherCard extends HTMLElement {
         type: `custom:${CARD_TAG}`,
         aspect_ratio: DEFAULT_ASPECT_RATIO,
         text_color: STUB_TEXT_COLOR,
+        text_color_night: STUB_TEXT_COLOR_NIGHT,
         font_size: STUB_FONT_SIZE,
         icon_size: STUB_ICON_SIZE,
         items: [],
@@ -203,6 +224,7 @@ class BeachWeatherCard extends HTMLElement {
       aspect_ratio: DEFAULT_ASPECT_RATIO,
       background_image: "",
       text_color: STUB_TEXT_COLOR,
+      text_color_night: STUB_TEXT_COLOR_NIGHT,
       font_size: STUB_FONT_SIZE,
       icon_size: STUB_ICON_SIZE,
       items: buildStubItems(hass, device.id),
@@ -217,6 +239,7 @@ class BeachWeatherCard extends HTMLElement {
       aspect_ratio: DEFAULT_ASPECT_RATIO,
       background_image: "",
       text_color: DEFAULT_TEXT_COLOR,
+      text_color_night: DEFAULT_TEXT_COLOR_NIGHT,
       font_size: DEFAULT_FONT_SIZE,
       icon_size: DEFAULT_ICON_SIZE,
       items: [],
@@ -292,7 +315,7 @@ class BeachWeatherCard extends HTMLElement {
     el.style.alignItems = "center";
     el.style.gap = "2px";
     el.style.textShadow = "0 1px 3px rgba(0,0,0,0.6)";
-    el.style.color = this._config.text_color || DEFAULT_TEXT_COLOR;
+    el.style.color = resolveTextColor(this._config, this._hass, this._config.device_id);
     el.style.textAlign = "center";
     el.style.whiteSpace = "nowrap";
     el.style.cursor = "pointer";
@@ -338,7 +361,9 @@ class BeachWeatherCard extends HTMLElement {
   _updateValues() {
     if (!this._hass || !this._itemNodes) return;
     if (this._config.background_image === "auto") this._applyBackground();
+    const color = resolveTextColor(this._config, this._hass, this._config.device_id);
     for (const node of this._itemNodes) {
+      node.el.style.color = color;
       const stateObj = this._hass.states[node.item.entity];
       if (!stateObj) {
         node.value.textContent = t(this._hass, "no_state");
@@ -363,6 +388,7 @@ class BeachWeatherCardEditor extends HTMLElement {
       aspect_ratio: DEFAULT_ASPECT_RATIO,
       background_image: "",
       text_color: DEFAULT_TEXT_COLOR,
+      text_color_night: DEFAULT_TEXT_COLOR_NIGHT,
       font_size: DEFAULT_FONT_SIZE,
       icon_size: DEFAULT_ICON_SIZE,
       items: [],
@@ -426,6 +452,7 @@ class BeachWeatherCardEditor extends HTMLElement {
             <select id="bg-preset">
               <option value="">${t(this._hass, "bg_default")}</option>
               <option value="sunset">${t(this._hass, "bg_sunset")}</option>
+              <option value="night">${t(this._hass, "bg_night")}</option>
               <option value="auto">${t(this._hass, "bg_auto")}</option>
               <option value="custom">${t(this._hass, "bg_custom")}</option>
             </select>
@@ -443,6 +470,10 @@ class BeachWeatherCardEditor extends HTMLElement {
             <input type="color" id="text-color" />
           </div>
           <div class="bwc-row">
+            <label>${t(this._hass, "text_color_night")}</label>
+            <input type="color" id="text-color-night" />
+          </div>
+          <div class="bwc-row">
             <label>${t(this._hass, "font_size")}</label>
             <input type="number" id="font-size" min="8" max="72" />
           </div>
@@ -457,7 +488,7 @@ class BeachWeatherCardEditor extends HTMLElement {
     // Editor-only UI state: whether "Eigene URL/Custom URL" is the active
     // preset selection. Can't be derived from background_image alone, since
     // "" is ambiguous between "default photo" and "custom URL not typed yet".
-    this._customBg = !["", "sunset", "auto"].includes(this._config.background_image || "");
+    this._customBg = !["", "sunset", "night", "auto"].includes(this._config.background_image || "");
 
     this.querySelector("#device").addEventListener("change", (ev) => {
       const deviceId = ev.target.value;
@@ -472,7 +503,7 @@ class BeachWeatherCardEditor extends HTMLElement {
       this._customBg = preset === "custom";
       if (!this._customBg) {
         this._config = { ...this._config, background_image: preset };
-      } else if (["", "sunset", "auto"].includes(this._config.background_image || "")) {
+      } else if (["", "sunset", "night", "auto"].includes(this._config.background_image || "")) {
         this._config = { ...this._config, background_image: "" };
       }
       this._fireChanged();
@@ -491,6 +522,11 @@ class BeachWeatherCardEditor extends HTMLElement {
     });
     this.querySelector("#text-color").addEventListener("change", (ev) => {
       this._config = { ...this._config, text_color: ev.target.value || DEFAULT_TEXT_COLOR };
+      this._fireChanged();
+      this._renderDynamic();
+    });
+    this.querySelector("#text-color-night").addEventListener("change", (ev) => {
+      this._config = { ...this._config, text_color_night: ev.target.value || DEFAULT_TEXT_COLOR_NIGHT };
       this._fireChanged();
       this._renderDynamic();
     });
@@ -524,12 +560,13 @@ class BeachWeatherCardEditor extends HTMLElement {
     deviceSelect.value = this._config.device_id || "";
 
     const bg = this._config.background_image || "";
-    const isPreset = !this._customBg && (bg === "" || bg === "sunset" || bg === "auto");
+    const isPreset = !this._customBg && ["", "sunset", "night", "auto"].includes(bg);
     this.querySelector("#bg-preset").value = isPreset ? bg : "custom";
     this.querySelector("#bg-custom-row").style.display = isPreset ? "none" : "";
     this.querySelector("#bg-custom").value = isPreset ? "" : bg;
     this.querySelector("#aspect").value = this._config.aspect_ratio || DEFAULT_ASPECT_RATIO;
     this.querySelector("#text-color").value = this._config.text_color || DEFAULT_TEXT_COLOR;
+    this.querySelector("#text-color-night").value = this._config.text_color_night || DEFAULT_TEXT_COLOR_NIGHT;
     this.querySelector("#font-size").value = this._config.font_size || DEFAULT_FONT_SIZE;
     this.querySelector("#icon-size").value = this._config.icon_size || DEFAULT_ICON_SIZE;
 
@@ -561,7 +598,7 @@ class BeachWeatherCardEditor extends HTMLElement {
       el.className = "bwc-item";
       el.style.left = item.center_x ? "50%" : `${item.x ?? 50}%`;
       el.style.top = item.center_y ? "50%" : `${item.y ?? 50}%`;
-      el.style.color = this._config.text_color || DEFAULT_TEXT_COLOR;
+      el.style.color = resolveTextColor(this._config, this._hass, this._config.device_id);
 
       if (item.show_icon !== false && item.entity) {
         const stateObj = this._hass.states[item.entity];

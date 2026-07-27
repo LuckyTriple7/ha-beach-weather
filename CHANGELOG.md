@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.18.0] - 2026-07-27
+### Added
+- Dedicated bundled night background photo — new "Night" preset in the background dropdown, and "Automatic (weather)" now uses it instead of the sunset photo as a placeholder
+- Separate "Text color (night)" setting — the card's text color now follows the location's live `sensor.is_day`, independent of which background is selected, so values stay legible against a dark night photo without manually flipping the color yourself
+
 ## [0.17.1] - 2026-07-26
 ### Fixed
 - "Automatic (weather)" background inferred day/night from the `weather.<slug>` condition string, which HA only distinguishes for "clear-night" — a cloudy or rainy night still showed the sunny photo. Now reads `sensor.is_day` directly, which is correct regardless of weather condition
