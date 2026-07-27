@@ -44,6 +44,18 @@ async def _async_register_frontend(hass: HomeAssistant) -> None:
     add_extra_js_url(hass, CARD_URL)
 
 
+async def _async_initial_refresh(marine: MarineCoordinator, forecast: ForecastCoordinator) -> None:
+    # Avoids ~20 entries queuing for the shared rate limiter in lockstep at
+    # HA boot. Not required for correctness, just a thundering-herd nicety.
+    await asyncio.sleep(random.uniform(0, INITIAL_JITTER_MAX))
+    # async_refresh (not async_config_entry_first_refresh) — this runs as a
+    # background task, decoupled from HA's own startup, so there's no
+    # ConfigEntryNotReady to raise; the coordinator's regular polling already
+    # retries on failure.
+    await marine.async_refresh()
+    await forecast.async_refresh()
+
+
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     domain_data = hass.data.setdefault(DOMAIN, {})
     domain_data.setdefault("rate_limiter", OpenMeteoRateLimiter(RATE_LIMIT_MIN_SPACING))
@@ -66,17 +78,19 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         coord.latitude = effective.get(CONF_LATITUDE, coord.latitude)
         coord.longitude = effective.get(CONF_LONGITUDE, coord.longitude)
 
-    # Avoids ~20 entries queuing for the shared rate limiter in lockstep at
-    # HA boot. Not required for correctness, just a thundering-herd nicety.
-    await asyncio.sleep(random.uniform(0, INITIAL_JITTER_MAX))
-
-    await marine.async_config_entry_first_refresh()
-    await forecast.async_config_entry_first_refresh()
-
     domain_data[entry.entry_id] = {"marine": marine, "forecast": forecast}
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     entry.async_on_unload(entry.add_update_listener(_async_reload_entry))
+
+    # Entities come up "unavailable" and populate once the shared rate
+    # limiter gets to this entry's turn — with 20+ locations that queue can
+    # take a couple minutes, and none of it should hold up HA's own startup.
+    entry.async_create_background_task(
+        hass,
+        _async_initial_refresh(marine, forecast),
+        f"{DOMAIN}_{entry.entry_id}_initial_refresh",
+    )
     return True
 
 

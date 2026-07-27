@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.19.1] - 2026-07-27
+### Changed
+- Each location's first data fetch no longer blocks Home Assistant startup — with 20+ locations sharing the global rate limiter (min. 3s between any two requests), waiting for every location's first refresh before startup could finish could add minutes to boot. Entities now come up as "unavailable" and populate in the background as their turn in the queue comes up; the regular polling cycle still retries on failure the same as before
+
 ## [0.19.0] - 2026-07-27
 ### Added
 - New `sensor.visibility` (horizontal visibility, km) — was already part of the Forecast API response but had no sensor. Also added to the `weather.<slug>` entity's `visibility` attribute

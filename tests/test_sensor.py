@@ -42,6 +42,13 @@ async def _setup_entry(hass, mock_marine_update, mock_forecast_update, beach_ori
     entry.add_to_hass(hass)
     assert await hass.config_entries.async_setup(entry.entry_id)
     await hass.async_block_till_done()
+    # The first coordinator refresh now runs as a background task (so it
+    # never blocks HA startup) — block_till_done doesn't wait for it, so
+    # force it here to get deterministic sensor states in tests.
+    data = hass.data[DOMAIN][entry.entry_id]
+    await data["marine"].async_refresh()
+    await data["forecast"].async_refresh()
+    await hass.async_block_till_done()
     return entry
 
 

@@ -113,6 +113,12 @@ class TestWeatherEntitySetup:
         entry.add_to_hass(hass)
         assert await hass.config_entries.async_setup(entry.entry_id)
         await hass.async_block_till_done()
+        # First refresh now runs as a background task so it never blocks HA
+        # startup — force it here for a deterministic state in the test.
+        data = hass.data[DOMAIN][entry.entry_id]
+        await data["marine"].async_refresh()
+        await data["forecast"].async_refresh()
+        await hass.async_block_till_done()
 
         state = hass.states.get("weather.platja_de_muro")
         assert state is not None
