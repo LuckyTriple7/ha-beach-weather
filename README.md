@@ -90,7 +90,7 @@ The integration ships its own card, `custom:beach-weather-card` — it registers
 2. In the card editor, pick a **location** (one of your Beach Weather devices)
 3. Drag the value chips directly on the preview image to position them
 4. Per value: choose the sensor, toggle whether the name is shown, toggle whether the icon is shown, toggle horizontal/vertical centering (locks x and/or y to 50%, e.g. for a title stacked above the weather), or remove it
-5. Under **Advanced**: pick a background — the three bundled photos (sunny / sunset / night), **Automatic (weather)** (picks the sunny or night photo based on the location's live `sensor.is_day`) — or supply your own image URL. Also adjust the card's aspect ratio (e.g. `16:9`, `4:3`, `1:1`), font size, icon size, and separately the text color for day and for night — the night color is used whenever `sensor.is_day` is "night", regardless of which background is selected, so values stay legible on a dark photo. The card's width is always responsive to the dashboard column
+5. Under **Advanced**: pick a background — the three bundled photos (sunny / sunset / night), **Automatic (day/night)** (picks the sunny or night photo based on the location's live `sensor.is_day`) — or supply your own image URL. Also adjust the card's aspect ratio (e.g. `16:9`, `4:3`, `1:1`), font size, icon size, and separately the text color for day and for night — the night color is used whenever `sensor.is_day` is "night", regardless of which background is selected, so values stay legible on a dark photo. The card's width is always responsive to the dashboard column
 
 Example YAML:
 

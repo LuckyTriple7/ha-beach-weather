@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.18.1] - 2026-07-27
+### Fixed
+- The UV Index value now auto-hides on the card at night (`sensor.is_day` = "night") instead of showing a meaningless 0 — applies wherever a UV Index sensor is placed on the card, no config needed
+
+### Changed
+- Renamed the "Automatic (weather)" background preset to "Automatic (day/night)" — it was never actually based on weather condition, only `sensor.is_day`
+
 ## [0.18.0] - 2026-07-27
 ### Added
 - Dedicated bundled night background photo — new "Night" preset in the background dropdown, and "Automatic (weather)" now uses it instead of the sunset photo as a placeholder

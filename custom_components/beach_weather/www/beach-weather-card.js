@@ -20,7 +20,7 @@ const TRANSLATIONS = {
     background: "Background image",
     bg_default: "Default (sunny)",
     bg_sunset: "Sunset",
-    bg_auto: "Automatic (weather)",
+    bg_auto: "Automatic (day/night)",
     bg_night: "Night",
     bg_custom: "Custom URL…",
     bg_url: "Image URL",
@@ -46,7 +46,7 @@ const TRANSLATIONS = {
     background: "Hintergrundbild",
     bg_default: "Standard (sonnig)",
     bg_sunset: "Sonnenuntergang",
-    bg_auto: "Automatisch (Wetter)",
+    bg_auto: "Automatisch (Tag/Nacht)",
     bg_night: "Nacht",
     bg_custom: "Eigene URL…",
     bg_url: "Bild-URL",
@@ -90,6 +90,10 @@ function isNight(hass, deviceId) {
   const isDayEntityId = findEntityByKey(hass, deviceId, "is_day");
   const stateObj = isDayEntityId ? hass.states[isDayEntityId] : null;
   return stateObj ? stateObj.state === "night" : false;
+}
+
+function isUvIndexEntity(entityId) {
+  return !!entityId && entityId.startsWith("sensor.uv_index_");
 }
 
 // "auto" picks a bundled photo from the location's sensor.is_day (values
@@ -362,7 +366,14 @@ class BeachWeatherCard extends HTMLElement {
     if (!this._hass || !this._itemNodes) return;
     if (this._config.background_image === "auto") this._applyBackground();
     const color = resolveTextColor(this._config, this._hass, this._config.device_id);
+    const night = isNight(this._hass, this._config.device_id);
     for (const node of this._itemNodes) {
+      // UV index is meaningless at night — hide it instead of showing 0
+      if (isUvIndexEntity(node.item.entity) && night) {
+        node.el.style.display = "none";
+        continue;
+      }
+      node.el.style.display = "";
       node.el.style.color = color;
       const stateObj = this._hass.states[node.item.entity];
       if (!stateObj) {
