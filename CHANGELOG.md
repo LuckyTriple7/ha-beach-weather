@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.21.0] - 2026-07-28
+### Added
+- New background preset **Automatic (weather)** (`auto_weather`) — picks a bundled photo from the location's live `weather.<slug>` condition (sunny / partly cloudy / cloudy / rainy), always falling back to the existing night photo after dark regardless of condition, same as the "Automatic (day/night)" preset
+
+### Fixed
+- The card editor's **Advanced** section (and any drag-in-progress state) collapsed/reset on every field edit, e.g. bumping font size with the number input's +/- steppers — `setConfig()` was rebuilding the whole editor DOM every time Home Assistant round-tripped a config change back to it, not just on the first load
+
 ## [0.20.0] - 2026-07-27
 ### Added
 - 5 new Marine API sensors, no extra request needed (same `current`/`hourly` call already made): `sensor.wind_wave_height`, `sensor.wind_wave_direction`, `sensor.wind_wave_period` (local wind-driven chop, separate from swell), `sensor.ocean_current_velocity`, `sensor.ocean_current_direction` — each with the same 48h `forecast` attribute as the other Marine sensors

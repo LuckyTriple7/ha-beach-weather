@@ -26,7 +26,7 @@ PLATFORMS = ["sensor", "button", "weather"]
 
 # Bump alongside manifest.json's "version" so browsers pick up card changes
 # after a HACS update instead of serving a cached copy of the old script.
-CARD_VERSION = "0.18.1"
+CARD_VERSION = "0.21.0"
 STATIC_URL_PATH = "/beach_weather_static"
 CARD_URL = f"{STATIC_URL_PATH}/beach-weather-card.js?v={CARD_VERSION}"
 

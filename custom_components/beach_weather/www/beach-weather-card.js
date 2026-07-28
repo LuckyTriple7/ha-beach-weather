@@ -4,6 +4,10 @@ const DOMAIN = "beach_weather";
 const DEFAULT_BACKGROUND = "/beach_weather_static/beach-weather-background.jpg";
 const SUNSET_BACKGROUND = "/beach_weather_static/beach-weather-background-sunset.jpg";
 const NIGHT_BACKGROUND = "/beach_weather_static/beach-weather-background-night.jpg";
+const WEATHER_SUNNY_BACKGROUND = "/beach_weather_static/beach-weather-background-weather-sunny.jpg";
+const WEATHER_PARTLYCLOUDY_BACKGROUND = "/beach_weather_static/beach-weather-background-weather-partlycloudy.jpg";
+const WEATHER_CLOUDY_BACKGROUND = "/beach_weather_static/beach-weather-background-weather-cloudy.jpg";
+const WEATHER_RAINY_BACKGROUND = "/beach_weather_static/beach-weather-background-weather-rainy.jpg";
 const DEFAULT_ASPECT_RATIO = "16:9";
 const DEFAULT_TEXT_COLOR = "#ffffff";
 const DEFAULT_TEXT_COLOR_NIGHT = "#ffffff";
@@ -21,6 +25,7 @@ const TRANSLATIONS = {
     bg_default: "Default (sunny)",
     bg_sunset: "Sunset",
     bg_auto: "Automatic (day/night)",
+    bg_auto_weather: "Automatic (weather)",
     bg_night: "Night",
     bg_custom: "Custom URL…",
     bg_url: "Image URL",
@@ -47,6 +52,7 @@ const TRANSLATIONS = {
     bg_default: "Standard (sonnig)",
     bg_sunset: "Sonnenuntergang",
     bg_auto: "Automatisch (Tag/Nacht)",
+    bg_auto_weather: "Automatisch (Wetter)",
     bg_night: "Nacht",
     bg_custom: "Eigene URL…",
     bg_url: "Bild-URL",
@@ -78,10 +84,40 @@ const AUTO_BACKGROUND_MAP = {
   night: "night",
 };
 
+// weather.<slug> condition -> bundled weather-background bucket. Unmapped/
+// unknown conditions fall back to "sunny". Night always wins regardless of
+// condition (see resolveAutoWeatherBackgroundKey) — a rainy night still uses
+// the shared night photo, not the rainy one.
+const WEATHER_CONDITION_BUCKET_MAP = {
+  sunny: "sunny",
+  "clear-night": "sunny",
+  partlycloudy: "partlycloudy",
+  cloudy: "cloudy",
+  fog: "cloudy",
+  windy: "cloudy",
+  "windy-variant": "cloudy",
+  exceptional: "cloudy",
+  rainy: "rainy",
+  pouring: "rainy",
+  lightning: "rainy",
+  "lightning-rainy": "rainy",
+  hail: "rainy",
+  snowy: "rainy",
+  "snowy-rainy": "rainy",
+};
+
 function findEntityByKey(hass, deviceId, key) {
   if (!hass || !deviceId) return null;
   const match = Object.values(hass.entities || {}).find(
     (entity) => entity.device_id === deviceId && entity.entity_id.startsWith(`sensor.${key}_`)
+  );
+  return match ? match.entity_id : null;
+}
+
+function findWeatherEntity(hass, deviceId) {
+  if (!hass || !deviceId) return null;
+  const match = Object.values(hass.entities || {}).find(
+    (entity) => entity.device_id === deviceId && entity.entity_id.startsWith("weather.")
   );
   return match ? match.entity_id : null;
 }
@@ -104,14 +140,33 @@ function resolveAutoBackgroundKey(hass, deviceId) {
   return AUTO_BACKGROUND_MAP[isNight(hass, deviceId) ? "night" : "day"] || "";
 }
 
+// "auto_weather" picks a bundled photo from the location's weather.<slug>
+// condition (sunny/partly cloudy/cloudy+rain) — but at night it always uses
+// the same night photo as the plain day/night "auto" mode, regardless of
+// condition, since a night photo showing "rain" isn't meaningfully different.
+function resolveAutoWeatherBackgroundKey(hass, deviceId) {
+  if (isNight(hass, deviceId)) return "night";
+  const weatherEntityId = findWeatherEntity(hass, deviceId);
+  const stateObj = weatherEntityId ? hass.states[weatherEntityId] : null;
+  const condition = stateObj ? stateObj.state : "";
+  return WEATHER_CONDITION_BUCKET_MAP[condition] || "sunny";
+}
+
 // `background_image` config value: "" -> DEFAULT_BACKGROUND, "sunset" -> SUNSET_BACKGROUND,
 // "night" -> NIGHT_BACKGROUND, "auto" -> resolved from the location's is_day
-// sensor, anything else is treated as a literal URL to a user-supplied image.
+// sensor, "auto_weather" -> resolved from the location's weather condition
+// (falling back to the night photo after dark), anything else is treated as
+// a literal URL to a user-supplied image.
 function resolveBackground(value, hass, deviceId) {
   if (!value) return DEFAULT_BACKGROUND;
   if (value === "auto") return resolveBackground(resolveAutoBackgroundKey(hass, deviceId));
+  if (value === "auto_weather") return resolveBackground(resolveAutoWeatherBackgroundKey(hass, deviceId));
   if (value === "sunset") return SUNSET_BACKGROUND;
   if (value === "night") return NIGHT_BACKGROUND;
+  if (value === "sunny") return WEATHER_SUNNY_BACKGROUND;
+  if (value === "partlycloudy") return WEATHER_PARTLYCLOUDY_BACKGROUND;
+  if (value === "cloudy") return WEATHER_CLOUDY_BACKGROUND;
+  if (value === "rainy") return WEATHER_RAINY_BACKGROUND;
   return value;
 }
 
@@ -364,7 +419,9 @@ class BeachWeatherCard extends HTMLElement {
 
   _updateValues() {
     if (!this._hass || !this._itemNodes) return;
-    if (this._config.background_image === "auto") this._applyBackground();
+    if (this._config.background_image === "auto" || this._config.background_image === "auto_weather") {
+      this._applyBackground();
+    }
     const color = resolveTextColor(this._config, this._hass, this._config.device_id);
     const night = isNight(this._hass, this._config.device_id);
     for (const node of this._itemNodes) {
@@ -405,7 +462,13 @@ class BeachWeatherCardEditor extends HTMLElement {
       items: [],
       ...config,
     };
-    if (this._hass) this._buildOnce();
+    if (!this._hass) return;
+    // Full DOM rebuild only on the very first setConfig — every later call
+    // (e.g. HA round-tripping our own config-changed event back to us after
+    // a field edit) must not wipe the DOM, or open <details>, drag state and
+    // scroll position reset on every keystroke.
+    if (!this._built) this._buildOnce();
+    else this._renderDynamic();
   }
 
   set hass(hass) {
@@ -465,6 +528,7 @@ class BeachWeatherCardEditor extends HTMLElement {
               <option value="sunset">${t(this._hass, "bg_sunset")}</option>
               <option value="night">${t(this._hass, "bg_night")}</option>
               <option value="auto">${t(this._hass, "bg_auto")}</option>
+              <option value="auto_weather">${t(this._hass, "bg_auto_weather")}</option>
               <option value="custom">${t(this._hass, "bg_custom")}</option>
             </select>
           </div>
@@ -499,7 +563,7 @@ class BeachWeatherCardEditor extends HTMLElement {
     // Editor-only UI state: whether "Eigene URL/Custom URL" is the active
     // preset selection. Can't be derived from background_image alone, since
     // "" is ambiguous between "default photo" and "custom URL not typed yet".
-    this._customBg = !["", "sunset", "night", "auto"].includes(this._config.background_image || "");
+    this._customBg = !["", "sunset", "night", "auto", "auto_weather"].includes(this._config.background_image || "");
 
     this.querySelector("#device").addEventListener("change", (ev) => {
       const deviceId = ev.target.value;
@@ -514,7 +578,7 @@ class BeachWeatherCardEditor extends HTMLElement {
       this._customBg = preset === "custom";
       if (!this._customBg) {
         this._config = { ...this._config, background_image: preset };
-      } else if (["", "sunset", "night", "auto"].includes(this._config.background_image || "")) {
+      } else if (["", "sunset", "night", "auto", "auto_weather"].includes(this._config.background_image || "")) {
         this._config = { ...this._config, background_image: "" };
       }
       this._fireChanged();
@@ -571,7 +635,7 @@ class BeachWeatherCardEditor extends HTMLElement {
     deviceSelect.value = this._config.device_id || "";
 
     const bg = this._config.background_image || "";
-    const isPreset = !this._customBg && ["", "sunset", "night", "auto"].includes(bg);
+    const isPreset = !this._customBg && ["", "sunset", "night", "auto", "auto_weather"].includes(bg);
     this.querySelector("#bg-preset").value = isPreset ? bg : "custom";
     this.querySelector("#bg-custom-row").style.display = isPreset ? "none" : "";
     this.querySelector("#bg-custom").value = isPreset ? "" : bg;
