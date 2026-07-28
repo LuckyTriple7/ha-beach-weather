@@ -106,20 +106,46 @@ const WEATHER_CONDITION_BUCKET_MAP = {
   "snowy-rainy": "rainy",
 };
 
+// Resolving an entity id by device+key means scanning the *entire* entity
+// registry (every entity of every integration, not just this device's).
+// With many locations on one dashboard, every card redoes that scan on
+// every hass update (which fires on ANY entity's state change system-wide),
+// so it adds up fast. hass.entities keeps the same object reference across
+// plain state updates and only gets a new one when the registry itself
+// changes, so caching per that reference is safe and self-invalidating.
+const entityLookupCache = new WeakMap(); // hass.entities -> Map(cacheKey -> entityId|null)
+
+function cachedEntityLookup(hass, cacheKey, finder) {
+  if (!hass || !hass.entities) return finder();
+  let cache = entityLookupCache.get(hass.entities);
+  if (!cache) {
+    cache = new Map();
+    entityLookupCache.set(hass.entities, cache);
+  }
+  if (cache.has(cacheKey)) return cache.get(cacheKey);
+  const result = finder();
+  cache.set(cacheKey, result);
+  return result;
+}
+
 function findEntityByKey(hass, deviceId, key) {
   if (!hass || !deviceId) return null;
-  const match = Object.values(hass.entities || {}).find(
-    (entity) => entity.device_id === deviceId && entity.entity_id.startsWith(`sensor.${key}_`)
-  );
-  return match ? match.entity_id : null;
+  return cachedEntityLookup(hass, `key:${deviceId}|${key}`, () => {
+    const match = Object.values(hass.entities || {}).find(
+      (entity) => entity.device_id === deviceId && entity.entity_id.startsWith(`sensor.${key}_`)
+    );
+    return match ? match.entity_id : null;
+  });
 }
 
 function findWeatherEntity(hass, deviceId) {
   if (!hass || !deviceId) return null;
-  const match = Object.values(hass.entities || {}).find(
-    (entity) => entity.device_id === deviceId && entity.entity_id.startsWith("weather.")
-  );
-  return match ? match.entity_id : null;
+  return cachedEntityLookup(hass, `weather:${deviceId}`, () => {
+    const match = Object.values(hass.entities || {}).find(
+      (entity) => entity.device_id === deviceId && entity.entity_id.startsWith("weather.")
+    );
+    return match ? match.entity_id : null;
+  });
 }
 
 function isNight(hass, deviceId) {

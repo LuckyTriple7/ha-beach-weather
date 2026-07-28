@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.21.1] - 2026-07-28
+### Fixed
+- Dashboards with many locations (e.g. 20 cards) became noticeably sluggish, especially while editing — every card's day/night and weather-condition lookups scanned the *entire* HA entity registry on every hass update (which fires on any entity's state change system-wide, not just this integration's), several times per card per tick. These lookups are now cached per entity-registry reference, which is stable across normal state updates
+
 ## [0.21.0] - 2026-07-28
 ### Added
 - New background preset **Automatic (weather)** (`auto_weather`) — picks a bundled photo from the location's live `weather.<slug>` condition (sunny / partly cloudy / cloudy / rainy), always falling back to the existing night photo after dark regardless of condition, same as the "Automatic (day/night)" preset
