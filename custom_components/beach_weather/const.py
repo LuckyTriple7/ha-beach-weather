@@ -54,7 +54,7 @@ RATE_LIMIT_MIN_SPACING = 3.0  # seconds between the start of any two outbound re
 INITIAL_JITTER_MAX = 15.0  # seconds, stagger before an entry's first refresh
 
 # Open-Meteo error backoff (seconds) keyed by HTTP status
-ERROR_BACKOFF: dict[int, int] = {403: 1800, 429: 900}
+ERROR_BACKOFF: dict[int, int] = {403: 1800, 429: 900, 503: 30}
 DEFAULT_ERROR_BACKOFF = 300
 
 # Sensor keys (used for both unique_id suffix and entity_id prefix)

@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.22.1] - 2026-08-01
+### Fixed
+- 503 (Open-Meteo temporarily overloaded) now backs off only 30s instead of the 300s default — it's a transient condition, not a rate-limit lockout like 403/429, so retries (including a manual "Update Now" press) shouldn't be blocked nearly as long
+
 ## [0.22.0] - 2026-08-01
 ### Changed
 - Both Open-Meteo coordinators (marine, forecast) now reuse Home Assistant's shared aiohttp session instead of each opening its own — same fix applied upstream to the Strato DynDNS integration after review feedback from a HA core maintainer

@@ -75,6 +75,23 @@ class TestOpenMeteoCoordinatorBase:
             await coordinator._async_update_data()
         assert coordinator._backoff_until is not None
 
+    async def test_503_uses_short_backoff(self, hass):
+        entry = _make_entry(hass)
+        coordinator = _make_coordinator(hass, entry)
+
+        session = _mock_session()
+        session.get = MagicMock(return_value=_mock_response(503))
+        coordinator._http = session
+
+        loop = asyncio.get_running_loop()
+        before = loop.time()
+        with pytest.raises(UpdateFailed):
+            await coordinator._async_update_data()
+        # 503 backs off for 30s (ERROR_BACKOFF), well under the 900s/1800s
+        # used for 429/403 — a transient overload shouldn't lock out retries
+        # as long as an explicit rate-limit response.
+        assert coordinator._backoff_until - before <= 35
+
     async def test_backoff_skips_request_without_calling_session(self, hass):
         entry = _make_entry(hass)
         coordinator = _make_coordinator(hass, entry)
