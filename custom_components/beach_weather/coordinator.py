@@ -6,10 +6,10 @@ from datetime import timedelta
 from typing import Any
 
 import aiohttp
-import async_timeout
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
 from .const import (
@@ -53,7 +53,7 @@ class OpenMeteoCoordinatorBase(DataUpdateCoordinator[dict[str, Any] | None]):
         self.entry = entry
         self.latitude = entry.data[CONF_LATITUDE]
         self.longitude = entry.data[CONF_LONGITUDE]
-        self._session: aiohttp.ClientSession | None = None
+        self._http = async_get_clientsession(hass)
         self._backoff_until: float | None = None
         self.last_status_code: int | None = None
 
@@ -68,12 +68,6 @@ class OpenMeteoCoordinatorBase(DataUpdateCoordinator[dict[str, Any] | None]):
         if not self.is_backing_off:
             return None
         return round(self._backoff_until - asyncio.get_running_loop().time())
-
-    @property
-    def _http(self) -> aiohttp.ClientSession:
-        if self._session is None or self._session.closed:
-            self._session = aiohttp.ClientSession()
-        return self._session
 
     def _set_backoff(self, status: int) -> None:
         loop = asyncio.get_running_loop()
@@ -94,7 +88,7 @@ class OpenMeteoCoordinatorBase(DataUpdateCoordinator[dict[str, Any] | None]):
         if self.DAILY_PARAMS:
             params["daily"] = self.DAILY_PARAMS
 
-        async with async_timeout.timeout(15):
+        async with asyncio.timeout(15):
             async with self._http.get(self.API_URL, params=params) as resp:
                 self.last_status_code = resp.status
                 if resp.status in ERROR_BACKOFF:
@@ -156,10 +150,6 @@ class OpenMeteoCoordinatorBase(DataUpdateCoordinator[dict[str, Any] | None]):
 
         self._backoff_until = None
         self.async_set_updated_data(current)
-
-    async def async_close(self) -> None:
-        if self._session and not self._session.closed:
-            await self._session.close()
 
 
 class MarineCoordinator(OpenMeteoCoordinatorBase):

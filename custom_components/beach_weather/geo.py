@@ -12,7 +12,6 @@ import math
 import re
 
 import aiohttp
-import async_timeout
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
@@ -67,7 +66,7 @@ async def async_suggest_name(hass: HomeAssistant, lat: float, lon: float) -> str
     session = async_get_clientsession(hass)
     params = {"lat": lat, "lon": lon, "format": "jsonv2", "zoom": 16}
     try:
-        async with async_timeout.timeout(10):
+        async with asyncio.timeout(10):
             async with session.get(
                 _NOMINATIM_URL, params=params, headers={"User-Agent": _USER_AGENT}
             ) as resp:
@@ -96,7 +95,7 @@ async def async_search_place(hass: HomeAssistant, query: str) -> tuple[float, fl
     session = async_get_clientsession(hass)
     params = {"q": query, "format": "jsonv2", "limit": 1}
     try:
-        async with async_timeout.timeout(10):
+        async with asyncio.timeout(10):
             async with session.get(
                 _NOMINATIM_SEARCH_URL, params=params, headers={"User-Agent": _USER_AGENT}
             ) as resp:
@@ -131,7 +130,7 @@ async def async_suggest_orientation(hass: HomeAssistant, lat: float, lon: float)
     )
     session = async_get_clientsession(hass)
     try:
-        async with async_timeout.timeout(12):
+        async with asyncio.timeout(12):
             async with session.post(
                 _OVERPASS_URL, data={"data": query}, headers={"User-Agent": _USER_AGENT}
             ) as resp:

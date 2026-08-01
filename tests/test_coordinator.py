@@ -58,7 +58,7 @@ class TestOpenMeteoCoordinatorBase:
         session.get = MagicMock(
             return_value=_mock_response(200, {"current": {"wave_height": 0.5}})
         )
-        coordinator._session = session
+        coordinator._http = session
 
         data = await coordinator._async_update_data()
         assert data["wave_height"] == 0.5
@@ -69,7 +69,7 @@ class TestOpenMeteoCoordinatorBase:
 
         session = _mock_session()
         session.get = MagicMock(return_value=_mock_response(403))
-        coordinator._session = session
+        coordinator._http = session
 
         with pytest.raises(UpdateFailed):
             await coordinator._async_update_data()
@@ -82,7 +82,7 @@ class TestOpenMeteoCoordinatorBase:
         coordinator._backoff_until = loop.time() + 100
 
         session = MagicMock()
-        coordinator._session = session
+        coordinator._http = session
 
         with pytest.raises(UpdateFailed):
             await coordinator._async_update_data()
@@ -94,7 +94,7 @@ class TestOpenMeteoCoordinatorBase:
 
         session = _mock_session()
         session.get = MagicMock(return_value=_mock_response(200, {}))
-        coordinator._session = session
+        coordinator._http = session
 
         with pytest.raises(UpdateFailed):
             await coordinator._async_update_data()
@@ -107,7 +107,7 @@ class TestOpenMeteoCoordinatorBase:
         session.get = MagicMock(
             return_value=_mock_response(200, {"current": {"wave_height": 0.5}})
         )
-        coordinator._session = session
+        coordinator._http = session
 
         await coordinator._async_update_data()
         assert coordinator.last_status_code == 200
@@ -118,7 +118,7 @@ class TestOpenMeteoCoordinatorBase:
 
         session = _mock_session()
         session.get = MagicMock(return_value=_mock_response(403))
-        coordinator._session = session
+        coordinator._http = session
 
         with pytest.raises(UpdateFailed):
             await coordinator._async_update_data()
@@ -136,7 +136,7 @@ class TestAsyncForceRefresh:
         session.get = MagicMock(
             return_value=_mock_response(200, {"current": {"wave_height": 0.5}})
         )
-        coordinator._session = session
+        coordinator._http = session
 
         await coordinator.async_force_refresh()
         session.get.assert_called_once()
@@ -152,7 +152,7 @@ class TestAsyncForceRefresh:
         session.get = MagicMock(
             return_value=_mock_response(200, {"current": {"wave_height": 0.5}})
         )
-        coordinator._session = session
+        coordinator._http = session
 
         loop = asyncio.get_running_loop()
         start = loop.time()
@@ -166,7 +166,7 @@ class TestAsyncForceRefresh:
 
         session = _mock_session()
         session.get = MagicMock(return_value=_mock_response(403))
-        coordinator._session = session
+        coordinator._http = session
 
         await coordinator.async_force_refresh()
         assert coordinator._backoff_until is not None

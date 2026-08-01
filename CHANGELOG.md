@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.22.0] - 2026-08-01
+### Changed
+- Both Open-Meteo coordinators (marine, forecast) now reuse Home Assistant's shared aiohttp session instead of each opening its own — same fix applied upstream to the Strato DynDNS integration after review feedback from a HA core maintainer
+- `geo.py` and `coordinator.py` no longer depend on the external `async_timeout` package (unused, replaced by builtin `asyncio.timeout`)
+
 ## [0.21.1] - 2026-07-28
 ### Fixed
 - Dashboards with many locations (e.g. 20 cards) became noticeably sluggish, especially while editing — every card's day/night and weather-condition lookups scanned the *entire* HA entity registry on every hass update (which fires on any entity's state change system-wide, not just this integration's), several times per card per tick. These lookups are now cached per entity-registry reference, which is stable across normal state updates

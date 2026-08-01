@@ -26,7 +26,7 @@ PLATFORMS = ["sensor", "button", "weather"]
 
 # Bump alongside manifest.json's "version" so browsers pick up card changes
 # after a HACS update instead of serving a cached copy of the old script.
-CARD_VERSION = "0.21.1"
+CARD_VERSION = "0.22.0"
 STATIC_URL_PATH = "/beach_weather_static"
 CARD_URL = f"{STATIC_URL_PATH}/beach-weather-card.js?v={CARD_VERSION}"
 
@@ -102,10 +102,7 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
     if unload_ok:
         domain_data = hass.data.get(DOMAIN, {})
-        entry_data = domain_data.pop(entry.entry_id, None)
-        if entry_data:
-            await entry_data["marine"].async_close()
-            await entry_data["forecast"].async_close()
+        domain_data.pop(entry.entry_id, None)
 
         other_loaded = [
             e

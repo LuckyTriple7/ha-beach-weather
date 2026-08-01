@@ -2,5 +2,4 @@ pytest
 pytest-asyncio
 pytest-homeassistant-custom-component
 aiohttp
-async-timeout
 voluptuous
