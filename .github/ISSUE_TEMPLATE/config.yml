@@ -1,0 +1,14 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Home Assistant Community Forum
+    url: https://community.home-assistant.io/
+    about: General Home Assistant questions and setup help that are not specific to this integration.
+  - name: Home Assistant Core issues
+    url: https://github.com/home-assistant/core/issues
+    about: Problems with Home Assistant itself rather than with this integration.
+  - name: HACS custom repositories documentation
+    url: https://www.hacs.xyz/docs/faq/custom_repositories/
+    about: Help with adding and installing this integration through HACS.
+  - name: Open-Meteo API status
+    url: https://open-meteo.com/
+    about: Check whether the upstream weather/marine API is degraded before reporting missing data.
