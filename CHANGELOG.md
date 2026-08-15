@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.23.0] - 2026-08-15
+### Added
+- The card's language can be set explicitly: **Advanced → Language** in the editor, or `language: de` / `language: en` in YAML. `auto` (the default, and the previous behaviour) keeps following the Home Assistant user language
+
+### Changed
+- Language detection also considers `hass.locale.language` before falling back to `hass.language`
+
 ## [0.22.1] - 2026-08-01
 ### Fixed
 - 503 (Open-Meteo temporarily overloaded) now backs off only 30s instead of the 300s default — it's a transient condition, not a rate-limit lockout like 403/429, so retries (including a manual "Update Now" press) shouldn't be blocked nearly as long

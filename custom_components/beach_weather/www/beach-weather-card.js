@@ -34,6 +34,8 @@ const TRANSLATIONS = {
     text_color_night: "Text color (night)",
     font_size: "Font size (px)",
     icon_size: "Icon size (px)",
+    language: "Language",
+    language_auto: "Automatic (Home Assistant)",
     name: "Name",
     icon: "Icon",
     centered_x: "Centered X",
@@ -61,6 +63,8 @@ const TRANSLATIONS = {
     text_color_night: "Schriftfarbe (Nachts)",
     font_size: "Schriftgröße (px)",
     icon_size: "Icon-Größe (px)",
+    language: "Sprache",
+    language_auto: "Automatisch (Home Assistant)",
     name: "Name",
     icon: "Icon",
     centered_x: "X zentriert",
@@ -72,8 +76,17 @@ const TRANSLATIONS = {
   },
 };
 
-function t(hass, key) {
-  const lang = (hass && hass.language ? hass.language : "en").toLowerCase().startsWith("de") ? "de" : "en";
+// An explicit `language:` in the card config wins; otherwise the language the
+// user has set in Home Assistant, falling back to English.
+function resolveLang(hass, config) {
+  const forced = (config && config.language ? config.language : "auto").toLowerCase();
+  if (forced === "de" || forced === "en") return forced;
+  const lang = hass && (hass.locale?.language || hass.language) ? (hass.locale?.language || hass.language) : "en";
+  return lang.toLowerCase().startsWith("de") ? "de" : "en";
+}
+
+function t(hass, key, config) {
+  const lang = resolveLang(hass, config);
   return TRANSLATIONS[lang][key] || TRANSLATIONS.en[key] || key;
 }
 
@@ -357,7 +370,7 @@ class BeachWeatherCard extends HTMLElement {
     if (!this._config.items || this._config.items.length === 0) {
       const notice = document.createElement("div");
       notice.style.padding = "16px";
-      notice.textContent = t(this._hass, "no_items_card");
+      notice.textContent = t(this._hass, "no_items_card", this._config);
       card.appendChild(notice);
       this.appendChild(card);
       this._itemNodes = [];
@@ -460,7 +473,7 @@ class BeachWeatherCard extends HTMLElement {
       node.el.style.color = color;
       const stateObj = this._hass.states[node.item.entity];
       if (!stateObj) {
-        node.value.textContent = t(this._hass, "no_state");
+        node.value.textContent = t(this._hass, "no_state", this._config);
         continue;
       }
       if (node.icon) {
@@ -536,51 +549,59 @@ class BeachWeatherCardEditor extends HTMLElement {
       </style>
       <div class="bwc-editor">
         <div class="bwc-row">
-          <label>${t(this._hass, "location")}</label>
+          <label>${t(this._hass, "location", this._config)}</label>
           <select id="device"></select>
         </div>
         <div class="bwc-row">
-          <label>${t(this._hass, "preview_hint")}</label>
+          <label>${t(this._hass, "preview_hint", this._config)}</label>
           <div class="bwc-canvas" id="canvas"></div>
         </div>
         <div class="bwc-list" id="list"></div>
-        <button class="bwc-add" id="add">${t(this._hass, "add_value")}</button>
+        <button class="bwc-add" id="add">${t(this._hass, "add_value", this._config)}</button>
         <details class="bwc-advanced">
-          <summary>${t(this._hass, "advanced")}</summary>
+          <summary>${t(this._hass, "advanced", this._config)}</summary>
           <div class="bwc-row">
-            <label>${t(this._hass, "background")}</label>
+            <label>${t(this._hass, "background", this._config)}</label>
             <select id="bg-preset">
-              <option value="">${t(this._hass, "bg_default")}</option>
-              <option value="sunset">${t(this._hass, "bg_sunset")}</option>
-              <option value="night">${t(this._hass, "bg_night")}</option>
-              <option value="auto">${t(this._hass, "bg_auto")}</option>
-              <option value="auto_weather">${t(this._hass, "bg_auto_weather")}</option>
-              <option value="custom">${t(this._hass, "bg_custom")}</option>
+              <option value="">${t(this._hass, "bg_default", this._config)}</option>
+              <option value="sunset">${t(this._hass, "bg_sunset", this._config)}</option>
+              <option value="night">${t(this._hass, "bg_night", this._config)}</option>
+              <option value="auto">${t(this._hass, "bg_auto", this._config)}</option>
+              <option value="auto_weather">${t(this._hass, "bg_auto_weather", this._config)}</option>
+              <option value="custom">${t(this._hass, "bg_custom", this._config)}</option>
             </select>
           </div>
           <div class="bwc-row" id="bg-custom-row">
-            <label>${t(this._hass, "bg_url")}</label>
+            <label>${t(this._hass, "bg_url", this._config)}</label>
             <input type="text" id="bg-custom" />
           </div>
           <div class="bwc-row">
-            <label>${t(this._hass, "aspect_ratio")}</label>
+            <label>${t(this._hass, "aspect_ratio", this._config)}</label>
             <input type="text" id="aspect" />
           </div>
           <div class="bwc-row">
-            <label>${t(this._hass, "text_color")}</label>
+            <label>${t(this._hass, "text_color", this._config)}</label>
             <input type="color" id="text-color" />
           </div>
           <div class="bwc-row">
-            <label>${t(this._hass, "text_color_night")}</label>
+            <label>${t(this._hass, "text_color_night", this._config)}</label>
             <input type="color" id="text-color-night" />
           </div>
           <div class="bwc-row">
-            <label>${t(this._hass, "font_size")}</label>
+            <label>${t(this._hass, "font_size", this._config)}</label>
             <input type="number" id="font-size" min="8" max="72" />
           </div>
           <div class="bwc-row">
-            <label>${t(this._hass, "icon_size")}</label>
+            <label>${t(this._hass, "icon_size", this._config)}</label>
             <input type="number" id="icon-size" min="8" max="96" />
+          </div>
+          <div class="bwc-row">
+            <label>${t(this._hass, "language", this._config)}</label>
+            <select id="language">
+              <option value="auto">${t(this._hass, "language_auto", this._config)}</option>
+              <option value="de">Deutsch</option>
+              <option value="en">English</option>
+            </select>
           </div>
         </details>
       </div>
@@ -641,6 +662,13 @@ class BeachWeatherCardEditor extends HTMLElement {
       this._fireChanged();
       this._renderDynamic();
     });
+    this.querySelector("#language").addEventListener("change", (ev) => {
+      this._config = { ...this._config, language: ev.target.value };
+      this._fireChanged();
+      // The editor's own labels are translated too, so rebuild it entirely.
+      this._built = false;
+      this._render();
+    });
 
     this._renderDynamic();
   }
@@ -670,6 +698,7 @@ class BeachWeatherCardEditor extends HTMLElement {
     this.querySelector("#text-color-night").value = this._config.text_color_night || DEFAULT_TEXT_COLOR_NIGHT;
     this.querySelector("#font-size").value = this._config.font_size || DEFAULT_FONT_SIZE;
     this.querySelector("#icon-size").value = this._config.icon_size || DEFAULT_ICON_SIZE;
+    this.querySelector("#language").value = this._config.language || "auto";
 
     this._renderCanvas();
     this._renderList();
@@ -714,7 +743,7 @@ class BeachWeatherCardEditor extends HTMLElement {
 
       const value = document.createElement("span");
       value.style.fontSize = `${this._config.font_size || DEFAULT_FONT_SIZE}px`;
-      value.textContent = item.entity ? entityLabel(this._hass, item.entity) : t(this._hass, "no_sensor");
+      value.textContent = item.entity ? entityLabel(this._hass, item.entity) : t(this._hass, "no_sensor", this._config);
       el.appendChild(value);
 
       el.addEventListener("pointerdown", (ev) => this._startDrag(ev, index, el, canvas));
@@ -784,29 +813,29 @@ class BeachWeatherCardEditor extends HTMLElement {
       row.appendChild(select);
 
       row.appendChild(
-        this._toggle(t(this._hass, "name"), item.show_name === true, (checked) =>
+        this._toggle(t(this._hass, "name", this._config), item.show_name === true, (checked) =>
           this._updateItem(index, { show_name: checked })
         )
       );
       row.appendChild(
-        this._toggle(t(this._hass, "icon"), item.show_icon !== false, (checked) =>
+        this._toggle(t(this._hass, "icon", this._config), item.show_icon !== false, (checked) =>
           this._updateItem(index, { show_icon: checked })
         )
       );
       row.appendChild(
-        this._toggle(t(this._hass, "centered_x"), item.center_x === true, (checked) =>
+        this._toggle(t(this._hass, "centered_x", this._config), item.center_x === true, (checked) =>
           this._updateItem(index, { center_x: checked })
         )
       );
       row.appendChild(
-        this._toggle(t(this._hass, "centered_y"), item.center_y === true, (checked) =>
+        this._toggle(t(this._hass, "centered_y", this._config), item.center_y === true, (checked) =>
           this._updateItem(index, { center_y: checked })
         )
       );
 
       const remove = document.createElement("button");
       remove.textContent = "×";
-      remove.title = t(this._hass, "remove");
+      remove.title = t(this._hass, "remove", this._config);
       remove.addEventListener("click", () => this._removeItem(index));
       row.appendChild(remove);
 

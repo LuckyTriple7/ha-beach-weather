@@ -111,6 +111,7 @@ text_color: "#ffffff"
 text_color_night: "#ffffff"   # used instead of text_color whenever sensor.is_day is "night"
 font_size: 16   # px
 icon_size: 28   # px
+language: auto   # auto = follow the Home Assistant user language, or "de"/"en"
 items:
   - entity: sensor.location_platja_de_muro
     x: 50
