@@ -3,6 +3,8 @@
 [![HACS](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/hacs/integration)
 [![Version](https://img.shields.io/github/v/release/LuckyTriple7/ha-beach-weather)](https://github.com/LuckyTriple7/ha-beach-weather/releases)
 
+[![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-ffdd00?style=for-the-badge&logo=buy-me-a-coffee&logoColor=black)](https://buymeacoffee.com/luckytriple7)
+
 Home Assistant custom integration for beach and water conditions (water temperature, waves, wind, bathing conditions), powered by the free [Open-Meteo](https://open-meteo.com/) Marine and Forecast APIs — no API key required.
 
 ## Features
