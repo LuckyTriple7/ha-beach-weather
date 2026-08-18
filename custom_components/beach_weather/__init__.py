@@ -8,6 +8,7 @@ from homeassistant.components.frontend import add_extra_js_url
 from homeassistant.components.http import StaticPathConfig
 from homeassistant.config_entries import ConfigEntry, ConfigEntryState
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers.start import async_at_started
 
 from .const import (
     CONF_LATITUDE,
@@ -26,9 +27,10 @@ PLATFORMS = ["sensor", "button", "weather"]
 
 # Bump alongside manifest.json's "version" so browsers pick up card changes
 # after a HACS update instead of serving a cached copy of the old script.
-CARD_VERSION = "0.23.0"
+CARD_VERSION = "0.24.0"
 STATIC_URL_PATH = "/beach_weather_static"
-CARD_URL = f"{STATIC_URL_PATH}/beach-weather-card.js?v={CARD_VERSION}"
+CARD_PATH = f"{STATIC_URL_PATH}/beach-weather-card.js"
+CARD_URL = f"{CARD_PATH}?v={CARD_VERSION}"
 
 
 async def _async_register_frontend(hass: HomeAssistant) -> None:
@@ -41,7 +43,46 @@ async def _async_register_frontend(hass: HomeAssistant) -> None:
     await hass.http.async_register_static_paths(
         [StaticPathConfig(STATIC_URL_PATH, str(www_path), cache_headers=False)]
     )
-    add_extra_js_url(hass, CARD_URL)
+    # Lovelace may not be set up yet when this entry is added; registering at
+    # start covers both a cold boot and an entry added while HA is running.
+    async_at_started(hass, _async_register_card_resource)
+
+
+async def _async_register_card_resource(hass: HomeAssistant) -> None:
+    """Publish the bundled card as a regular Lovelace resource.
+
+    Deliberately not frontend.add_extra_js_url(): Home Assistant renders those
+    into the index page as `<script>if (isModern) { import("<url>"); }</script>`,
+    where `isModern` is a user-agent regex plus a feature check. On a browser
+    that check rejects, the import never runs and the card silently ends up as
+    "Custom element doesn't exist" — while HACS cards keep working, because
+    Lovelace loads its own resources regardless of that check.
+    """
+    # Imported lazily so this module still imports where lovelace isn't set up.
+    from homeassistant.components.lovelace.const import LOVELACE_DATA, MODE_STORAGE
+
+    lovelace = hass.data.get(LOVELACE_DATA)
+    if lovelace is None or lovelace.resource_mode != MODE_STORAGE:
+        # Resources come from YAML (or Lovelace is missing) — those can't be
+        # managed programmatically, so fall back to the extra module URL.
+        add_extra_js_url(hass, CARD_URL)
+        return
+
+    resources = lovelace.resources
+    await resources.async_get_info()  # does nothing but force the store to load
+
+    for item in resources.async_items():
+        if item["url"].split("?")[0] != CARD_PATH:
+            continue
+        # Same card, stale ?v= (or wrong type) — update in place so browsers
+        # fetch the new file after an update instead of serving a cached one.
+        if item["url"] != CARD_URL or item.get("type") != "module":
+            await resources.async_update_item(
+                item["id"], {"res_type": "module", "url": CARD_URL}
+            )
+        return
+
+    await resources.async_create_item({"res_type": "module", "url": CARD_URL})
 
 
 async def _async_initial_refresh(marine: MarineCoordinator, forecast: ForecastCoordinator) -> None:

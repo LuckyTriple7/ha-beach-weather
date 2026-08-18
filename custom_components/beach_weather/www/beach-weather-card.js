@@ -380,9 +380,29 @@ class BeachWeatherCard extends HTMLElement {
     const container = document.createElement("div");
     container.style.position = "relative";
     container.style.width = "100%";
+    container.style.overflow = "hidden";
     container.style.aspectRatio = (this._config.aspect_ratio || DEFAULT_ASPECT_RATIO).replace(":", "/");
-    container.style.backgroundSize = "cover";
-    container.style.backgroundPosition = "center";
+
+    // The photo is a real <img> layer, not a CSS background-image: iOS WebKit
+    // paints a CSS background against the height the element had *before*
+    // aspect-ratio resolved and never repaints it, which showed the photo
+    // across only part of the card in the Home Assistant companion app. An
+    // <img> with object-fit: cover always fills the box's final size.
+    const background = document.createElement("img");
+    background.alt = "";
+    background.decoding = "async";
+    background.draggable = false;
+    background.style.position = "absolute";
+    background.style.top = "0";
+    background.style.left = "0";
+    background.style.width = "100%";
+    background.style.height = "100%";
+    background.style.objectFit = "cover";
+    background.style.objectPosition = "center";
+    background.style.pointerEvents = "none";
+    container.appendChild(background);
+
+    this._background = background;
     this._container = container;
     this._applyBackground();
 
@@ -397,9 +417,11 @@ class BeachWeatherCard extends HTMLElement {
   }
 
   _applyBackground() {
-    if (!this._container) return;
+    if (!this._background) return;
     const url = resolveBackground(this._config.background_image, this._hass, this._config.device_id);
-    this._container.style.backgroundImage = `url("${url}")`;
+    // The auto presets re-check the background on every hass update; only
+    // touching src on an actual change avoids a re-decode/flicker each tick.
+    if (this._background.getAttribute("src") !== url) this._background.setAttribute("src", url);
   }
 
   _buildItemNode(item) {
@@ -667,7 +689,7 @@ class BeachWeatherCardEditor extends HTMLElement {
       this._fireChanged();
       // The editor's own labels are translated too, so rebuild it entirely.
       this._built = false;
-      this._render();
+      this._buildOnce();
     });
 
     this._renderDynamic();

@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.24.0] - 2026-08-18
+### Fixed
+- **The card showed "Custom element doesn't exist" in Firefox** (and any other browser Home Assistant doesn't classify as "modern"), while working fine in Chrome. The card was published with `frontend.add_extra_js_url()`, which Home Assistant renders into the index page as `<script>if (isModern) { import("<url>"); }</script>` — `isModern` being a user-agent regex plus a feature check. Where that check rejects, the import never runs and the card silently never registers. It is now registered as a normal **Lovelace resource** (Settings → Dashboards → Resources) instead, the same mechanism every HACS-installed card uses, which Lovelace loads regardless of that check. YAML resource mode still falls back to the old behaviour, since resources can't be managed programmatically there
+- The background photo was only drawn across part of the card in the Home Assistant companion app on iPhone. It is now a real `<img>` layer with `object-fit: cover` instead of a CSS `background-image` — iOS WebKit painted the CSS background against the card's height from *before* `aspect-ratio` resolved and never repainted it
+- Switching **Advanced → Language** in the card editor threw a `TypeError` (called a `_render()` method that doesn't exist) and left the editor broken until the dashboard was reopened
+
 ## [0.23.0] - 2026-08-15
 ### Added
 - The card's language can be set explicitly: **Advanced → Language** in the editor, or `language: de` / `language: en` in YAML. `auto` (the default, and the previous behaviour) keeps following the Home Assistant user language
