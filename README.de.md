@@ -42,47 +42,49 @@ Für jeden weiteren Standort die Integration erneut hinzufügen. Alle Vorschläg
 
 ## Entitäten
 
-Ein HA-Gerät pro Standort, benannt nach dem Standort. Alle Entity-IDs enthalten einen Slug des Standortnamens, hier am Beispiel „Platja de Muro":
+Ein HA-Gerät pro Standort, benannt nach dem Standort. Home Assistant leitet die Entity-IDs aus dem Gerätenamen und dem Namen der jeweiligen Entität ab, hier am Beispiel „Platja de Muro":
 
 | Entität | Beschreibung |
 |--------|-------------|
-| `sensor.water_temperature_platja_de_muro` | Wasseroberflächentemperatur (°C) |
-| `sensor.wave_height_platja_de_muro` | Wellenhöhe (m) |
-| `sensor.wave_direction_platja_de_muro` | Gesamt-Wellenrichtung (°) |
-| `sensor.wave_period_platja_de_muro` | Wellenperiode (s) |
-| `sensor.swell_height_platja_de_muro` | Swell-Wellenhöhe (m) — surfrelevant, getrennt von lokaler Windsee |
-| `sensor.swell_direction_platja_de_muro` | Swell-Richtung (°) |
-| `sensor.swell_period_platja_de_muro` | Swell-Periode (s) — Qualitätssignal fürs Surfen, getrennt von der gemischten Wellenperiode; Grundlage des Surf Score |
-| `sensor.wind_wave_height_platja_de_muro` | Windsee-Höhe (m) — lokal windgetriebene Kabbelung, getrennt vom Swell |
-| `sensor.wind_wave_direction_platja_de_muro` | Windsee-Richtung (°) |
-| `sensor.wind_wave_period_platja_de_muro` | Windsee-Periode (s) |
-| `sensor.ocean_current_velocity_platja_de_muro` | Strömungsgeschwindigkeit (km/h) |
-| `sensor.ocean_current_direction_platja_de_muro` | Strömungsrichtung (°) |
-| `sensor.timestamp_platja_de_muro` | Zeitstempel der Marine-Daten |
-| `sensor.wind_speed_platja_de_muro` | Windgeschwindigkeit (km/h) |
-| `sensor.wind_gusts_platja_de_muro` | Windböen (km/h) |
-| `sensor.wind_direction_platja_de_muro` | Windrichtung (°) |
-| `sensor.air_temperature_platja_de_muro` | Lufttemperatur in 2 m (°C) |
-| `sensor.humidity_platja_de_muro` | Relative Luftfeuchte (%) |
-| `sensor.precipitation_platja_de_muro` | Niederschlag im aktuellen Intervall (mm) |
-| `sensor.rain_platja_de_muro` | Regen im aktuellen Intervall (mm) |
-| `sensor.showers_platja_de_muro` | Schauer im aktuellen Intervall (mm) |
-| `sensor.pressure_platja_de_muro` | Luftdruck auf Meereshöhe (hPa) |
-| `sensor.cloud_cover_platja_de_muro` | Bewölkung (%) |
-| `sensor.uv_index_platja_de_muro` | UV-Index |
-| `sensor.visibility_platja_de_muro` | Horizontale Sichtweite (km) |
-| `sensor.is_day_platja_de_muro` | Tag/Nacht |
-| `sensor.weather_condition_platja_de_muro` | Wetterlage im Klartext (aus dem WMO-Code), mit dem Rohcode als Attribut |
-| `sensor.timestamp_wind_platja_de_muro` | Zeitstempel der Wind-/Wetterdaten |
-| `sensor.bathing_conditions_platja_de_muro` | Berechnete Badebedingungen als Text/Icon (ohne eigenen API-Aufruf) |
-| `sensor.location_platja_de_muro` | Statischer Anzeigename, aus Kompatibilität zu bestehenden Lovelace-Karten |
-| `sensor.last_status_platja_de_muro` | Letzter roher HTTP-Statuscode der Marine-API (Diagnose) |
-| `sensor.last_status_wind_platja_de_muro` | Letzter roher HTTP-Statuscode der Forecast-/Wind-API (Diagnose) |
-| `button.update_now_platja_de_muro` | Erzwingt sofortiges Aktualisieren beider APIs für diesen Standort — umgeht den gemeinsamen Rate-Limiter und einen aktiven Fehler-Backoff |
-| `sensor.surf_score_platja_de_muro` | Surf-Qualität, 0-100 |
-| `sensor.surf_condition_platja_de_muro` | Surf-Qualität als Kategorie (Kein Surf / Schlecht / Okay / Gut / Sehr gut / Perfekte Bedingungen) |
-| `sensor.surf_stars_platja_de_muro` | Surf-Qualität als Sternebewertung (★ bis ★★★★★), mit Punktzahl und Sternanzahl als Attribute |
+| `sensor.platja_de_muro_water_temperature` | Wasseroberflächentemperatur (°C) |
+| `sensor.platja_de_muro_wave_height` | Wellenhöhe (m) |
+| `sensor.platja_de_muro_wave_direction` | Gesamt-Wellenrichtung (°) |
+| `sensor.platja_de_muro_wave_period` | Wellenperiode (s) |
+| `sensor.platja_de_muro_swell_height` | Swell-Wellenhöhe (m) — surfrelevant, getrennt von lokaler Windsee |
+| `sensor.platja_de_muro_swell_direction` | Swell-Richtung (°) |
+| `sensor.platja_de_muro_swell_period` | Swell-Periode (s) — Qualitätssignal fürs Surfen, getrennt von der gemischten Wellenperiode; Grundlage des Surf Score |
+| `sensor.platja_de_muro_wind_wave_height` | Windsee-Höhe (m) — lokal windgetriebene Kabbelung, getrennt vom Swell |
+| `sensor.platja_de_muro_wind_wave_direction` | Windsee-Richtung (°) |
+| `sensor.platja_de_muro_wind_wave_period` | Windsee-Periode (s) |
+| `sensor.platja_de_muro_ocean_current_velocity` | Strömungsgeschwindigkeit (km/h) |
+| `sensor.platja_de_muro_ocean_current_direction` | Strömungsrichtung (°) |
+| `sensor.platja_de_muro_timestamp` | Zeitstempel der Marine-Daten |
+| `sensor.platja_de_muro_wind_speed` | Windgeschwindigkeit (km/h) |
+| `sensor.platja_de_muro_wind_gusts` | Windböen (km/h) |
+| `sensor.platja_de_muro_wind_direction` | Windrichtung (°) |
+| `sensor.platja_de_muro_air_temperature` | Lufttemperatur in 2 m (°C) |
+| `sensor.platja_de_muro_humidity` | Relative Luftfeuchte (%) |
+| `sensor.platja_de_muro_precipitation` | Niederschlag im aktuellen Intervall (mm) |
+| `sensor.platja_de_muro_rain` | Regen im aktuellen Intervall (mm) |
+| `sensor.platja_de_muro_showers` | Schauer im aktuellen Intervall (mm) |
+| `sensor.platja_de_muro_pressure` | Luftdruck auf Meereshöhe (hPa) |
+| `sensor.platja_de_muro_cloud_cover` | Bewölkung (%) |
+| `sensor.platja_de_muro_uv_index` | UV-Index |
+| `sensor.platja_de_muro_visibility` | Horizontale Sichtweite (km) |
+| `sensor.platja_de_muro_day_night` | Tag/Nacht |
+| `sensor.platja_de_muro_weather_condition` | Wetterlage im Klartext (aus dem WMO-Code), mit dem Rohcode als Attribut |
+| `sensor.platja_de_muro_wind_timestamp` | Zeitstempel der Wind-/Wetterdaten |
+| `sensor.platja_de_muro_bathing_conditions` | Berechnete Badebedingungen als Text/Icon (ohne eigenen API-Aufruf) |
+| `sensor.platja_de_muro_location` | Statischer Anzeigename des Standorts |
+| `sensor.platja_de_muro_marine_api_status` | Letzter roher HTTP-Statuscode der Marine-API (Diagnose) |
+| `sensor.platja_de_muro_weather_api_status` | Letzter roher HTTP-Statuscode der Forecast-/Wind-API (Diagnose) |
+| `button.platja_de_muro_update_now` | Erzwingt sofortiges Aktualisieren beider APIs für diesen Standort — umgeht den gemeinsamen Rate-Limiter und einen aktiven Fehler-Backoff |
+| `sensor.platja_de_muro_surf_score` | Surf-Qualität, 0-100 |
+| `sensor.platja_de_muro_surf_condition` | Surf-Qualität als Kategorie (Kein Surf / Schlecht / Okay / Gut / Sehr gut / Perfekte Bedingungen) |
+| `sensor.platja_de_muro_surf_stars` | Surf-Qualität als Sternebewertung (★ bis ★★★★★), mit Punktzahl und Sternanzahl als Attribute |
 | `weather.platja_de_muro` | Standard-HA-Wetterentity — aktuelle Bedingungen plus stündliche/tägliche Vorhersage |
+
+> Standorte, die mit 0.24.0 oder früher angelegt wurden, behalten ihre damaligen IDs (`sensor.water_temperature_platja_de_muro`) — die Entity-Registry schreibt eine bestehende ID nie um, ein Update auch nicht. Nur ab 1.1.0 neu angelegte Standorte nutzen das obige Schema. Die Lovelace-Karte sucht ihre Entities über den `translation_key` der Registry und kommt deshalb mit beiden Formen zurecht — auch mit selbst umbenannten Entities.
 
 Ein Sensor wird `unavailable`, wenn Open-Meteo für dieses Feld keinen Wert liefert oder die Anfrage scheitert. Ausnahme sind die beiden „Last Status"-Sensoren: Sie bleiben auch nach einem fehlgeschlagenen Update sichtbar und zeigen den rohen Statuscode (z. B. `403`), damit ein Rate-Limit-Problem ohne Log-Suche erkennbar ist.
 

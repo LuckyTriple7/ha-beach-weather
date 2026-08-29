@@ -42,47 +42,49 @@ Add the integration again for each additional location. All auto-suggestions are
 
 ## Entities
 
-One HA device per location, named after the location. All entity IDs include a slug of the location name, e.g. for "Platja de Muro":
+One HA device per location, named after the location. Home Assistant derives the entity IDs from the device name and each entity's own name, e.g. for "Platja de Muro":
 
 | Entity | Description |
 |--------|-------------|
-| `sensor.water_temperature_platja_de_muro` | Sea surface temperature (°C) |
-| `sensor.wave_height_platja_de_muro` | Wave height (m) |
-| `sensor.wave_direction_platja_de_muro` | Overall wave direction (°) |
-| `sensor.wave_period_platja_de_muro` | Wave period (s) |
-| `sensor.swell_height_platja_de_muro` | Swell wave height (m) — surf-relevant, separate from local wind chop |
-| `sensor.swell_direction_platja_de_muro` | Swell wave direction (°) |
-| `sensor.swell_period_platja_de_muro` | Swell period (s) — surf-quality signal, distinct from the mixed wave period; used by the Surf Score |
-| `sensor.wind_wave_height_platja_de_muro` | Wind-wave height (m) — local wind-driven chop, separate from swell |
-| `sensor.wind_wave_direction_platja_de_muro` | Wind-wave direction (°) |
-| `sensor.wind_wave_period_platja_de_muro` | Wind-wave period (s) |
-| `sensor.ocean_current_velocity_platja_de_muro` | Ocean current velocity (km/h) |
-| `sensor.ocean_current_direction_platja_de_muro` | Ocean current direction (°) |
-| `sensor.timestamp_platja_de_muro` | Timestamp of the marine data |
-| `sensor.wind_speed_platja_de_muro` | Wind speed (km/h) |
-| `sensor.wind_gusts_platja_de_muro` | Wind gusts (km/h) |
-| `sensor.wind_direction_platja_de_muro` | Wind direction (°) |
-| `sensor.air_temperature_platja_de_muro` | Air temperature at 2m (°C) |
-| `sensor.humidity_platja_de_muro` | Relative humidity (%) |
-| `sensor.precipitation_platja_de_muro` | Precipitation, current interval (mm) |
-| `sensor.rain_platja_de_muro` | Rain, current interval (mm) |
-| `sensor.showers_platja_de_muro` | Showers, current interval (mm) |
-| `sensor.pressure_platja_de_muro` | Sea-level air pressure (hPa) |
-| `sensor.cloud_cover_platja_de_muro` | Cloud cover (%) |
-| `sensor.uv_index_platja_de_muro` | UV index |
-| `sensor.visibility_platja_de_muro` | Horizontal visibility (km) |
-| `sensor.is_day_platja_de_muro` | Day/Night |
-| `sensor.weather_condition_platja_de_muro` | Human-readable weather condition (from WMO weather code), with the raw code as an attribute |
-| `sensor.timestamp_wind_platja_de_muro` | Timestamp of the wind/weather data |
-| `sensor.bathing_conditions_platja_de_muro` | Computed bathing-conditions text/icon (no own API call) |
-| `sensor.location_platja_de_muro` | Static display name, kept for compatibility with existing Lovelace cards |
-| `sensor.last_status_platja_de_muro` | Last raw HTTP status code from the Marine API (diagnostic) |
-| `sensor.last_status_wind_platja_de_muro` | Last raw HTTP status code from the Forecast/Wind API (diagnostic) |
-| `button.update_now_platja_de_muro` | Forces an immediate refresh of both APIs for this location — bypasses the shared rate limiter and any active error backoff |
-| `sensor.surf_score_platja_de_muro` | Surf quality, 0-100 |
-| `sensor.surf_condition_platja_de_muro` | Surf quality as a category (No surf / Poor / Okay / Good / Very good / Perfect conditions) |
-| `sensor.surf_stars_platja_de_muro` | Surf quality as star rating (★ to ★★★★★), with the numeric score and star count as attributes |
+| `sensor.platja_de_muro_water_temperature` | Sea surface temperature (°C) |
+| `sensor.platja_de_muro_wave_height` | Wave height (m) |
+| `sensor.platja_de_muro_wave_direction` | Overall wave direction (°) |
+| `sensor.platja_de_muro_wave_period` | Wave period (s) |
+| `sensor.platja_de_muro_swell_height` | Swell wave height (m) — surf-relevant, separate from local wind chop |
+| `sensor.platja_de_muro_swell_direction` | Swell wave direction (°) |
+| `sensor.platja_de_muro_swell_period` | Swell period (s) — surf-quality signal, distinct from the mixed wave period; used by the Surf Score |
+| `sensor.platja_de_muro_wind_wave_height` | Wind-wave height (m) — local wind-driven chop, separate from swell |
+| `sensor.platja_de_muro_wind_wave_direction` | Wind-wave direction (°) |
+| `sensor.platja_de_muro_wind_wave_period` | Wind-wave period (s) |
+| `sensor.platja_de_muro_ocean_current_velocity` | Ocean current velocity (km/h) |
+| `sensor.platja_de_muro_ocean_current_direction` | Ocean current direction (°) |
+| `sensor.platja_de_muro_timestamp` | Timestamp of the marine data |
+| `sensor.platja_de_muro_wind_speed` | Wind speed (km/h) |
+| `sensor.platja_de_muro_wind_gusts` | Wind gusts (km/h) |
+| `sensor.platja_de_muro_wind_direction` | Wind direction (°) |
+| `sensor.platja_de_muro_air_temperature` | Air temperature at 2m (°C) |
+| `sensor.platja_de_muro_humidity` | Relative humidity (%) |
+| `sensor.platja_de_muro_precipitation` | Precipitation, current interval (mm) |
+| `sensor.platja_de_muro_rain` | Rain, current interval (mm) |
+| `sensor.platja_de_muro_showers` | Showers, current interval (mm) |
+| `sensor.platja_de_muro_pressure` | Sea-level air pressure (hPa) |
+| `sensor.platja_de_muro_cloud_cover` | Cloud cover (%) |
+| `sensor.platja_de_muro_uv_index` | UV index |
+| `sensor.platja_de_muro_visibility` | Horizontal visibility (km) |
+| `sensor.platja_de_muro_day_night` | Day/Night |
+| `sensor.platja_de_muro_weather_condition` | Human-readable weather condition (from WMO weather code), with the raw code as an attribute |
+| `sensor.platja_de_muro_wind_timestamp` | Timestamp of the wind/weather data |
+| `sensor.platja_de_muro_bathing_conditions` | Computed bathing-conditions text/icon (no own API call) |
+| `sensor.platja_de_muro_location` | Static display name of the location |
+| `sensor.platja_de_muro_marine_api_status` | Last raw HTTP status code from the Marine API (diagnostic) |
+| `sensor.platja_de_muro_weather_api_status` | Last raw HTTP status code from the Forecast/Wind API (diagnostic) |
+| `button.platja_de_muro_update_now` | Forces an immediate refresh of both APIs for this location — bypasses the shared rate limiter and any active error backoff |
+| `sensor.platja_de_muro_surf_score` | Surf quality, 0-100 |
+| `sensor.platja_de_muro_surf_condition` | Surf quality as a category (No surf / Poor / Okay / Good / Very good / Perfect conditions) |
+| `sensor.platja_de_muro_surf_stars` | Surf quality as star rating (★ to ★★★★★), with the numeric score and star count as attributes |
 | `weather.platja_de_muro` | Standard HA weather entity — current conditions plus hourly/daily forecast |
+
+> Locations created with 0.24.0 or earlier keep the IDs they were given back then (`sensor.water_temperature_platja_de_muro`) — the entity registry never rewrites an existing entity's ID, and neither does an update. Only locations added from 1.1.0 on use the shape above. The Lovelace card finds its entities by their registry `translation_key`, so it works with either, and with entities you have renamed yourself.
 
 A sensor becomes `unavailable` when Open-Meteo doesn't return a value for that field, or when the request fails. The two "Last Status" sensors are the exception — they stay visible even after a failed update, showing the raw status code (e.g. `403`) so a rate-limit issue is diagnosable without digging through the log.
 

@@ -139,16 +139,17 @@ class TestLegacyResourceCleanup:
             await hass.async_block_till_done()
 
 
-class TestEntityIdSuggestion:
-    """The entity_id set in each entity's constructor is a *suggestion*.
+class TestEntityIds:
+    """Entity ids are left to the registry.
 
-    Core's entity_platform documents it as such ("An entity may suggest the
-    entity_id by setting entity_id itself"): it is only consulted when the
-    registry first creates the entry, and from then on the registry's value —
-    including a rename the user made — is what the entity gets back.
+    Nothing in this integration assigns `entity_id`; with
+    `_attr_has_entity_name = True` the registry derives it from the device name
+    and the entity's own name, and keeps whatever the user renames it to. The
+    card finds entities by their registry `translation_key`, so it does not
+    depend on this shape.
     """
 
-    async def test_ids_follow_the_documented_key_slug_shape(
+    async def test_ids_are_derived_from_device_and_entity_name(
         self, hass, mock_marine_update, mock_forecast_update
     ):
         entry = _make_entry(hass, "platja_de_muro")
@@ -156,9 +157,30 @@ class TestEntityIdSuggestion:
         await hass.async_block_till_done()
 
         registry = er.async_get(hass)
-        assert registry.async_get("sensor.water_temperature_platja_de_muro") is not None
+        assert registry.async_get("sensor.platja_de_muro_water_temperature") is not None
         assert registry.async_get("weather.platja_de_muro") is not None
-        assert registry.async_get("button.update_now_platja_de_muro") is not None
+        assert registry.async_get("button.platja_de_muro_update_now") is not None
+
+    async def test_translation_key_is_recorded_for_every_entity(
+        self, hass, mock_marine_update, mock_forecast_update
+    ):
+        # The card looks entities up by translation_key, so every entity it can
+        # be pointed at needs one. weather.<slug> is found by domain instead.
+        entry = _make_entry(hass, "platja_de_muro")
+        assert await hass.config_entries.async_setup(entry.entry_id)
+        await hass.async_block_till_done()
+
+        registry = er.async_get(hass)
+        without_key = [
+            e.entity_id
+            for e in registry.entities.values()
+            if e.platform == DOMAIN and not e.translation_key and e.domain != "weather"
+        ]
+        assert without_key == []
+        assert (
+            registry.async_get("sensor.platja_de_muro_water_temperature").translation_key
+            == "water_temperature"
+        )
 
     async def test_a_user_rename_survives_a_reload(
         self, hass, mock_marine_update, mock_forecast_update
@@ -169,11 +191,11 @@ class TestEntityIdSuggestion:
 
         registry = er.async_get(hass)
         registry.async_update_entity(
-            "sensor.water_temperature_platja_de_muro",
+            "sensor.platja_de_muro_water_temperature",
             new_entity_id="sensor.my_own_water_temperature",
         )
         await hass.config_entries.async_reload(entry.entry_id)
         await hass.async_block_till_done()
 
         assert hass.states.get("sensor.my_own_water_temperature") is not None
-        assert hass.states.get("sensor.water_temperature_platja_de_muro") is None
+        assert hass.states.get("sensor.platja_de_muro_water_temperature") is None

@@ -55,25 +55,25 @@ async def _setup_entry(hass, mock_marine_update, mock_forecast_update, beach_ori
 class TestSensorSetup:
     async def test_water_temperature_state(self, hass, mock_marine_update, mock_forecast_update):
         await _setup_entry(hass, mock_marine_update, mock_forecast_update)
-        state = hass.states.get(f"sensor.water_temperature_{SLUG}")
+        state = hass.states.get(f"sensor.{SLUG}_water_temperature")
         assert state is not None
         assert state.state == "23.8"
 
     async def test_wind_wave_height_state(self, hass, mock_marine_update, mock_forecast_update):
         await _setup_entry(hass, mock_marine_update, mock_forecast_update)
-        state = hass.states.get(f"sensor.wind_wave_height_{SLUG}")
+        state = hass.states.get(f"sensor.{SLUG}_wind_wave_height")
         assert state is not None
         assert state.state == "0.3"
 
     async def test_ocean_current_velocity_state(self, hass, mock_marine_update, mock_forecast_update):
         await _setup_entry(hass, mock_marine_update, mock_forecast_update)
-        state = hass.states.get(f"sensor.ocean_current_velocity_{SLUG}")
+        state = hass.states.get(f"sensor.{SLUG}_ocean_current_velocity")
         assert state is not None
         assert state.state == "1.4"
 
     async def test_visibility_state(self, hass, mock_marine_update, mock_forecast_update):
         await _setup_entry(hass, mock_marine_update, mock_forecast_update)
-        state = hass.states.get(f"sensor.visibility_{SLUG}")
+        state = hass.states.get(f"sensor.{SLUG}_visibility")
         assert state is not None
         assert state.state == "24.1"  # 24140 m -> km, rounded
 
@@ -81,7 +81,7 @@ class TestSensorSetup:
         self, hass, mock_marine_update, mock_forecast_update
     ):
         await _setup_entry(hass, mock_marine_update, mock_forecast_update)
-        state = hass.states.get(f"sensor.bathing_conditions_{SLUG}")
+        state = hass.states.get(f"sensor.{SLUG}_bathing_conditions")
         assert state is not None
         # MOCK_MARINE_CURRENT: wave_height=0.84 (<1.0 calm), water_temp=23.8
         # (>20, not >22-with-period>8) -> "very_good" under DEFAULT_THRESHOLDS.
@@ -91,7 +91,7 @@ class TestSensorSetup:
         self, hass, mock_marine_update, mock_forecast_update
     ):
         await _setup_entry(hass, mock_marine_update, mock_forecast_update)
-        state = hass.states.get(f"sensor.surf_score_{SLUG}")
+        state = hass.states.get(f"sensor.{SLUG}_surf_score")
         assert state is not None
         assert 0 <= float(state.state) <= 100
         assert "wave_period_score" in state.attributes
@@ -102,7 +102,7 @@ class TestSensorSetup:
         self, hass, mock_marine_update, mock_forecast_update
     ):
         await _setup_entry(hass, mock_marine_update, mock_forecast_update)
-        state = hass.states.get(f"sensor.swell_period_{SLUG}")
+        state = hass.states.get(f"sensor.{SLUG}_swell_period")
         assert state is not None
         assert state.state == "9.2"
 
@@ -113,19 +113,19 @@ class TestSensorSetup:
         # directly, bypassing _fetch_current entirely, so last_status_code
         # is never populated -> the diagnostic sensor stays unavailable.
         await _setup_entry(hass, mock_marine_update, mock_forecast_update)
-        state = hass.states.get(f"sensor.last_status_{SLUG}")
+        state = hass.states.get(f"sensor.{SLUG}_marine_api_status")
         assert state is not None
         assert state.state == STATE_UNAVAILABLE
 
     async def test_update_now_button_exists(self, hass, mock_marine_update, mock_forecast_update):
         await _setup_entry(hass, mock_marine_update, mock_forecast_update)
-        assert hass.states.get(f"button.update_now_{SLUG}") is not None
+        assert hass.states.get(f"button.{SLUG}_update_now") is not None
 
     async def test_wave_height_forecast_attribute(
         self, hass, mock_marine_update, mock_forecast_update
     ):
         await _setup_entry(hass, mock_marine_update, mock_forecast_update)
-        state = hass.states.get(f"sensor.wave_height_{SLUG}")
+        state = hass.states.get(f"sensor.{SLUG}_wave_height")
         assert state is not None
         forecast = state.attributes["forecast"]
         assert forecast is not None
@@ -136,7 +136,7 @@ class TestSensorSetup:
         self, hass, mock_marine_update, mock_forecast_update
     ):
         await _setup_entry(hass, mock_marine_update, mock_forecast_update)
-        state = hass.states.get(f"sensor.swell_period_{SLUG}")
+        state = hass.states.get(f"sensor.{SLUG}_swell_period")
         assert state.attributes["forecast"][0]["value"] == 9.2
 
 

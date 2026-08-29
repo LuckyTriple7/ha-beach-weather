@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.1.0] - 2026-08-29
+### Changed
+- **Entity IDs are left to the entity registry.** Every entity used to assign its own `entity_id` in the constructor (`sensor.water_temperature_platja_de_muro`). Core treats that as a suggestion rather than ownership, but it sits oddly next to `_attr_has_entity_name = True`, which is the mechanism meant to derive the ID — so it is gone. Locations added from now on get the shape Home Assistant derives from the device and entity name: `sensor.platja_de_muro_water_temperature`, `button.platja_de_muro_update_now`, `weather.platja_de_muro` (unchanged)
+- **Nothing changes for existing locations.** The registry never rewrites an existing entity's ID, so dashboards, automations and history keep working; only locations added from this version on use the new shape. The Lovelace card resolves entities through their registry `translation_key` from [0.2.0](https://github.com/LuckyTriple7/ha-beach-weather-card/releases/tag/v0.2.0) on, so it handles both shapes — and, unlike before, entities the user has renamed
+
 ## [1.0.0] - 2026-08-29
 ### Breaking
 - **The Lovelace card now lives in its own repository, [ha-beach-weather-card](https://github.com/LuckyTriple7/ha-beach-weather-card), and has to be installed separately** (HACS → Dashboard → *Beach Weather Card*). Up to 0.24.0 the card shipped inside this integration, which registered a Lovelace resource for it under `/beach_weather_static/`. Writing the user's shared `lovelace_resources` store from a config entry is not an integration's job — HACS does that as the package manager, visibly and with an uninstall path, which is where the card belongs. Existing dashboards keep working unchanged: same `custom:beach-weather-card` type, same config format, same entity IDs. Only a custom `background_image` pointing at a `/beach_weather_static/...` URL has to be repointed

@@ -31,7 +31,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import CONF_SLUG, DOMAIN
+from .const import DOMAIN
 from .coordinator import ForecastCoordinator
 from .sensor import _device_info
 
@@ -166,15 +166,7 @@ class BeachWeatherEntity(CoordinatorEntity, WeatherEntity):
 
     def __init__(self, coordinator: ForecastCoordinator, entry: ConfigEntry) -> None:
         super().__init__(coordinator)
-        slug = entry.data[CONF_SLUG]
         self._attr_unique_id = f"{entry.entry_id}_weather"
-        # Suggestion only: core treats an entity_id set here as the suggested
-        # object id (entity_platform: "An entity may suggest the entity_id by
-        # setting entity_id itself"), so the registry uses it when it first
-        # creates the entry and its own value — including a user's rename —
-        # wins on every later start. Keeps the ids the bundled card and
-        # existing picture-elements cards look up by prefix.
-        self.entity_id = f"weather.{slug}"
         self._attr_device_info = _device_info(entry)
 
     @property

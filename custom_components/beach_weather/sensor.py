@@ -29,7 +29,6 @@ from .const import (
     BATHING_CONDITION_OPTIONS,
     CONF_BEACH_ORIENTATION,
     CONF_NAME,
-    CONF_SLUG,
     DEFAULT_BEACH_ORIENTATION,
     DEFAULT_SURF_WEIGHTS,
     DEFAULT_THRESHOLDS,
@@ -186,16 +185,8 @@ class _BeachWeatherSensorBase(CoordinatorEntity, SensorEntity):
 
     def __init__(self, coordinator, entry: ConfigEntry, key: str) -> None:
         super().__init__(coordinator)
-        slug = entry.data[CONF_SLUG]
         self._attr_unique_id = f"{entry.entry_id}_{key}"
         self._attr_translation_key = key
-        # Suggestion only: core treats an entity_id set here as the suggested
-        # object id (entity_platform: "An entity may suggest the entity_id by
-        # setting entity_id itself"), so the registry uses it when it first
-        # creates the entry and its own value — including a user's rename —
-        # wins on every later start. Keeps the ids the bundled card and
-        # existing picture-elements cards look up by prefix.
-        self.entity_id = f"sensor.{key}_{slug}"
         self._attr_device_info = _device_info(entry)
 
     @property
@@ -894,16 +885,8 @@ class BathingConditionsSensor(SensorEntity):
     ) -> None:
         self._marine = marine
         self._forecast = forecast
-        slug = entry.data[CONF_SLUG]
         self._attr_unique_id = f"{entry.entry_id}_{KEY_BATHING_CONDITIONS}"
         self._attr_translation_key = KEY_BATHING_CONDITIONS
-        # Suggestion only: core treats an entity_id set here as the suggested
-        # object id (entity_platform: "An entity may suggest the entity_id by
-        # setting entity_id itself"), so the registry uses it when it first
-        # creates the entry and its own value — including a user's rename —
-        # wins on every later start. Keeps the ids the bundled card and
-        # existing picture-elements cards look up by prefix.
-        self.entity_id = f"sensor.{KEY_BATHING_CONDITIONS}_{slug}"
         self._attr_device_info = _device_info(entry)
 
     async def async_added_to_hass(self) -> None:
@@ -987,16 +970,8 @@ class LocationSensor(SensorEntity):
     _attr_icon = "mdi:map-marker"
 
     def __init__(self, entry: ConfigEntry) -> None:
-        slug = entry.data[CONF_SLUG]
         self._attr_unique_id = f"{entry.entry_id}_{KEY_LOCATION}"
         self._attr_translation_key = KEY_LOCATION
-        # Suggestion only: core treats an entity_id set here as the suggested
-        # object id (entity_platform: "An entity may suggest the entity_id by
-        # setting entity_id itself"), so the registry uses it when it first
-        # creates the entry and its own value — including a user's rename —
-        # wins on every later start. Keeps the ids the bundled card and
-        # existing picture-elements cards look up by prefix.
-        self.entity_id = f"sensor.{KEY_LOCATION}_{slug}"
         self._attr_device_info = _device_info(entry)
         self._attr_native_value = entry.data[CONF_NAME]
 
@@ -1013,16 +988,8 @@ class _LastStatusSensorBase(SensorEntity):
 
     def __init__(self, coordinator, entry: ConfigEntry, key: str) -> None:
         self._coordinator = coordinator
-        slug = entry.data[CONF_SLUG]
         self._attr_unique_id = f"{entry.entry_id}_{key}"
         self._attr_translation_key = key
-        # Suggestion only: core treats an entity_id set here as the suggested
-        # object id (entity_platform: "An entity may suggest the entity_id by
-        # setting entity_id itself"), so the registry uses it when it first
-        # creates the entry and its own value — including a user's rename —
-        # wins on every later start. Keeps the ids the bundled card and
-        # existing picture-elements cards look up by prefix.
-        self.entity_id = f"sensor.{key}_{slug}"
         self._attr_device_info = _device_info(entry)
 
     async def async_added_to_hass(self) -> None:
@@ -1079,16 +1046,8 @@ class _SurfSensorBase(SensorEntity):
         self._marine = marine
         self._forecast = forecast
         self._entry = entry
-        slug = entry.data[CONF_SLUG]
         self._attr_unique_id = f"{entry.entry_id}_{key}"
         self._attr_translation_key = key
-        # Suggestion only: core treats an entity_id set here as the suggested
-        # object id (entity_platform: "An entity may suggest the entity_id by
-        # setting entity_id itself"), so the registry uses it when it first
-        # creates the entry and its own value — including a user's rename —
-        # wins on every later start. Keeps the ids the bundled card and
-        # existing picture-elements cards look up by prefix.
-        self.entity_id = f"sensor.{key}_{slug}"
         self._attr_device_info = _device_info(entry)
 
     async def async_added_to_hass(self) -> None:
