@@ -11,7 +11,7 @@ All notable changes to this project will be documented in this file.
 - A one-time cleanup on start removes the Lovelace resource earlier versions registered under `/beach_weather_static/`. Without it, updating would leave a resource pointing at a path nothing serves any more, which Lovelace retries on every dashboard render. Nothing else in the resource store is touched, and the integration never writes to it again
 
 ### Changed
-- The download no longer carries the card and its seven photos, and the unused `brand/` directory is gone — about 1.9 MB less
+- The download no longer carries the card and its seven photos — about 1.8 MB less
 - Diagnostics also redact the location name and its slug, and redact the raw coordinator payload (which echoes the requested coordinates) rather than passing it through unfiltered
 
 ### Fixed
