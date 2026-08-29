@@ -14,7 +14,7 @@ Home-Assistant-Integration für Strand- und Wasserbedingungen (Wassertemperatur,
 - Beliebig viele Standorte, jeder als eigener Config-Entry — Koordinaten manuell eingeben oder auf der Karte auswählen
 - Wassertemperatur, Wellenhöhe/-periode, Windgeschwindigkeit/Böen/Richtung, dazu ein berechneter Sensor für die Badebedingungen
 - Eine normale `weather.<slug>`-Entity pro Standort mit stündlicher und täglicher Vorhersage, für die native Wetterkarte
-- Mitgelieferte Lovelace-Karte (`custom:beach-weather-card`) — Sensorwerte frei über einem Strandfoto positionieren, ohne manuelles Einrichten von Ressourcen
+- Passende Lovelace-Karte, [Beach Weather Card](https://github.com/LuckyTriple7/ha-beach-weather-card) (`custom:beach-weather-card`) — Sensorwerte frei über einem Strandfoto positionieren; separat über HACS installiert
 - Alle Anfragen sämtlicher Standorte laufen über einen gemeinsamen Rate-Limiter — auch viele Standorte feuern nie parallel auf Open-Meteo (vermeidet HTTP 403)
 - Automatischer Fehler-Backoff bei 403/429
 - Konfiguration komplett über die HA-Oberfläche, kein YAML nötig
@@ -94,46 +94,11 @@ Die 12 Marine-Sensoren (Wassertemperatur, Wellenhöhe/-richtung/-periode, Swell-
 
 ## Lovelace-Karte
 
-Die Integration bringt ihre eigene Karte mit, `custom:beach-weather-card` — sie registriert sich nach Installation/Update über HACS und einem Neustart von Home Assistant automatisch, ein manuelles „Ressource hinzufügen" entfällt.
+Die Karte hat ein eigenes Repository: **[Beach Weather Card](https://github.com/LuckyTriple7/ha-beach-weather-card)** (`custom:beach-weather-card`) — die Sensorwerte eines Standorts frei über einem Strandfoto positioniert, per Drag & Drop im Karteneditor.
 
-1. Dashboard öffnen → **Dashboard bearbeiten** → **Karte hinzufügen** → nach **Beach Weather Card** suchen
-2. Im Karteneditor einen **Standort** wählen (eines deiner Beach-Weather-Geräte)
-3. Die Wert-Chips direkt auf dem Vorschaubild an die gewünschte Stelle ziehen
-4. Pro Wert: Sensor wählen, Name ein-/ausblenden, Icon ein-/ausblenden, horizontal/vertikal zentrieren (fixiert x und/oder y auf 50 %, z. B. für einen Titel über dem Wetter) oder den Wert entfernen
-5. Unter **Erweitert**: Hintergrund wählen — die drei mitgelieferten Fotos (sonnig / Sonnenuntergang / Nacht), **Automatisch (Tag/Nacht)** (wählt das Sonnen- oder Nachtfoto anhand des Live-Werts von `sensor.is_day`), **Automatisch (Wetter)** (wählt sonnig / leicht bewölkt / bewölkt / regnerisch anhand der Live-Bedingung von `weather.<slug>`, greift nach Einbruch der Dunkelheit aber immer auf dasselbe Nachtfoto zurück) — oder eine eigene Bild-URL angeben. Ebenfalls einstellbar: Seitenverhältnis der Karte (z. B. `16:9`, `4:3`, `1:1`), Schriftgröße, Icon-Größe sowie getrennt die Schriftfarbe für Tag und Nacht — die Nachtfarbe greift immer, wenn `sensor.is_day` auf „night" steht, unabhängig vom gewählten Hintergrund, damit Werte auf dunklen Fotos lesbar bleiben. Die Breite der Karte richtet sich immer nach der Dashboard-Spalte
+Installation über HACS → **Dashboard** → **Beach Weather Card**. HACS registriert die Lovelace-Ressource selbst; diese Integration schreibt nicht in deinen Ressourcen-Speicher.
 
-Ein UV-Index-Wert auf der Karte blendet sich nachts (`sensor.is_day` = „night") automatisch aus, statt eine nichtssagende 0 anzuzeigen — ohne Konfiguration.
-
-Beispiel-YAML:
-
-```yaml
-type: custom:beach-weather-card
-device_id: 3f8a1c2b9e4d5f6a7b8c9d0e1f2a3b4c
-aspect_ratio: "16:9"
-background_image: ""   # "" = sonnig (Standard), "sunset"/"night" = mitgelieferte Fotos, "auto" = nach sensor.is_day, "auto_weather" = nach weather.<slug>, oder eine beliebige Bild-URL
-text_color: "#ffffff"
-text_color_night: "#ffffff"   # statt text_color, sobald sensor.is_day "night" ist
-font_size: 16   # px
-icon_size: 28   # px
-language: auto   # auto = folgt der Home-Assistant-Sprache, oder "de"/"en"
-items:
-  - entity: sensor.location_platja_de_muro
-    x: 50
-    y: 10
-    show_name: false
-    show_icon: false
-    center_x: true   # auf die horizontale Mitte fixiert, nur y ist ziehbar
-  - entity: sensor.water_temperature_platja_de_muro
-    x: 12
-    y: 20
-    show_name: false
-    show_icon: true
-  - entity: sensor.wave_height_platja_de_muro
-    x: 12
-    y: 35
-    show_name: true
-    show_icon: true
-```
+> **Umstieg von 0.24.0 oder älter:** Die Karte steckte bisher in dieser Integration, die dafür eine Lovelace-Ressource mit Ziel `/beach_weather_static/beach-weather-card.js` registriert hat. Version 1.0.0 entfernt diese Ressource beim nächsten Start und bedient den Pfad nicht mehr — die Karte also über HACS installieren, um sie weiter zu nutzen. Bestehende Dashboards müssen nicht angepasst werden: gleicher Kartentyp, gleiches Konfigurationsformat, gleiche Entity-IDs.
 
 ## Schwellenwerte für Badebedingungen
 
@@ -158,10 +123,10 @@ Die Attribute von `sensor.surf_score` schlüsseln auf, wie die Zahl zustande kam
 
 ## Diagnose
 
-Jeder Standort unterstützt HAs **Diagnose herunterladen** (Einstellungen → Geräte & Dienste → Beach Weather → Gerät des Standorts → ⋮ → Diagnose herunterladen). Enthalten sind der letzte Update-Status beider Coordinators, HTTP-Statuscode, Backoff-Zustand und Rohdaten, dazu die globalen Badebedingungs-Schwellenwerte und Surf-Score-Gewichte — Koordinaten werden geschwärzt.
+Jeder Standort unterstützt HAs **Diagnose herunterladen** (Einstellungen → Geräte & Dienste → Beach Weather → Gerät des Standorts → ⋮ → Diagnose herunterladen). Enthalten sind der letzte Update-Status beider Coordinators, HTTP-Statuscode, Backoff-Zustand und Rohdaten, dazu die globalen Badebedingungs-Schwellenwerte und Surf-Score-Gewichte — Koordinaten, Standortname und Slug werden geschwärzt, im Config-Entry ebenso wie in den Coordinator-Rohdaten.
 
 ## Fehlerbehandlung & Backoff
 
-Scheitert eine Anfrage, gehen die betroffenen Sensoren bis zum nächsten erfolgreichen Update auf `unavailable`; andere Standorte und die jeweils andere API bleiben unberührt. Bei HTTP 403 wartet der Coordinator 30 Minuten, bei 429 15 Minuten, bei anderen HTTP-Fehlern 5 Minuten, bevor er überhaupt einen neuen Versuch startet — das schützt davor, einen ohnehin blockenden Open-Meteo-Endpunkt weiter zu bombardieren. Der **Update Now**-Button ignoriert diesen Backoff und den gemeinsamen Rate-Limiter vollständig: Ein Druck löst immer sofort eine Anfrage aus, denn eine bewusste manuelle Aktion soll nicht stillschweigend vom automatischen Burst-Schutz geschluckt werden.
+Scheitert eine Anfrage, gehen die betroffenen Sensoren bis zum nächsten erfolgreichen Update auf `unavailable`; andere Standorte und die jeweils andere API bleiben unberührt. Bei HTTP 403 wartet der Coordinator 30 Minuten, bei 429 15 Minuten, bei 503 (Open-Meteo vorübergehend überlastet — ein transienter Zustand, keine Rate-Limit-Sperre) 30 Sekunden, bei allen anderen HTTP-Fehlern 5 Minuten, bevor er überhaupt einen neuen Versuch startet — das schützt davor, einen ohnehin blockenden Open-Meteo-Endpunkt weiter zu bombardieren. Der **Update Now**-Button ignoriert diesen Backoff und den gemeinsamen Rate-Limiter vollständig: Ein Druck löst immer sofort eine Anfrage aus, denn eine bewusste manuelle Aktion soll nicht stillschweigend vom automatischen Burst-Schutz geschluckt werden.
 
 Der allererste Datenabruf eines Standorts läuft im Hintergrund und blockiert nie den Start von Home Assistant — bei vielen Standorten am gemeinsamen Rate-Limiter kommen die Entities zunächst schlicht als `unavailable` hoch und füllen sich, sobald sie in der Warteschlange an der Reihe sind, meist innerhalb ein bis zwei Minuten.

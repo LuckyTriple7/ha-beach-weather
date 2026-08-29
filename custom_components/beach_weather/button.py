@@ -38,6 +38,12 @@ class UpdateNowButton(ButtonEntity):
         slug = entry.data[CONF_SLUG]
         self._attr_unique_id = f"{entry.entry_id}_{KEY_UPDATE_NOW}"
         self._attr_translation_key = KEY_UPDATE_NOW
+        # Suggestion only: core treats an entity_id set here as the suggested
+        # object id (entity_platform: "An entity may suggest the entity_id by
+        # setting entity_id itself"), so the registry uses it when it first
+        # creates the entry and its own value — including a user's rename —
+        # wins on every later start. Keeps the ids the bundled card and
+        # existing picture-elements cards look up by prefix.
         self.entity_id = f"button.{KEY_UPDATE_NOW}_{slug}"
         self._attr_device_info = _device_info(entry)
 

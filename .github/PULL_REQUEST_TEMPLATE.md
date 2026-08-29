@@ -26,7 +26,6 @@
 - [ ] Dependency upgrade
 - [ ] Bugfix (non-breaking change which fixes an issue)
 - [ ] New feature (adds functionality to the integration)
-- [ ] Lovelace card change (`custom_components/beach_weather/www/beach-weather-card.js`)
 - [ ] Deprecation (breaking change to happen in the future)
 - [ ] Breaking change (fix/feature causing existing functionality to break)
 - [ ] Code quality improvements or addition of tests

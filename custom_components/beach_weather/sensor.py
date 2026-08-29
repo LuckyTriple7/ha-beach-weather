@@ -189,6 +189,12 @@ class _BeachWeatherSensorBase(CoordinatorEntity, SensorEntity):
         slug = entry.data[CONF_SLUG]
         self._attr_unique_id = f"{entry.entry_id}_{key}"
         self._attr_translation_key = key
+        # Suggestion only: core treats an entity_id set here as the suggested
+        # object id (entity_platform: "An entity may suggest the entity_id by
+        # setting entity_id itself"), so the registry uses it when it first
+        # creates the entry and its own value — including a user's rename —
+        # wins on every later start. Keeps the ids the bundled card and
+        # existing picture-elements cards look up by prefix.
         self.entity_id = f"sensor.{key}_{slug}"
         self._attr_device_info = _device_info(entry)
 
@@ -891,6 +897,12 @@ class BathingConditionsSensor(SensorEntity):
         slug = entry.data[CONF_SLUG]
         self._attr_unique_id = f"{entry.entry_id}_{KEY_BATHING_CONDITIONS}"
         self._attr_translation_key = KEY_BATHING_CONDITIONS
+        # Suggestion only: core treats an entity_id set here as the suggested
+        # object id (entity_platform: "An entity may suggest the entity_id by
+        # setting entity_id itself"), so the registry uses it when it first
+        # creates the entry and its own value — including a user's rename —
+        # wins on every later start. Keeps the ids the bundled card and
+        # existing picture-elements cards look up by prefix.
         self.entity_id = f"sensor.{KEY_BATHING_CONDITIONS}_{slug}"
         self._attr_device_info = _device_info(entry)
 
@@ -968,8 +980,7 @@ class BathingConditionsSensor(SensorEntity):
 
 
 class LocationSensor(SensorEntity):
-    """Static display-name sensor, kept so existing Lovelace picture-elements
-    cards that reference it by entity_id keep working after migration."""
+    """Static display-name sensor holding the location's configured name."""
 
     _attr_has_entity_name = True
     _attr_should_poll = False
@@ -979,6 +990,12 @@ class LocationSensor(SensorEntity):
         slug = entry.data[CONF_SLUG]
         self._attr_unique_id = f"{entry.entry_id}_{KEY_LOCATION}"
         self._attr_translation_key = KEY_LOCATION
+        # Suggestion only: core treats an entity_id set here as the suggested
+        # object id (entity_platform: "An entity may suggest the entity_id by
+        # setting entity_id itself"), so the registry uses it when it first
+        # creates the entry and its own value — including a user's rename —
+        # wins on every later start. Keeps the ids the bundled card and
+        # existing picture-elements cards look up by prefix.
         self.entity_id = f"sensor.{KEY_LOCATION}_{slug}"
         self._attr_device_info = _device_info(entry)
         self._attr_native_value = entry.data[CONF_NAME]
@@ -999,6 +1016,12 @@ class _LastStatusSensorBase(SensorEntity):
         slug = entry.data[CONF_SLUG]
         self._attr_unique_id = f"{entry.entry_id}_{key}"
         self._attr_translation_key = key
+        # Suggestion only: core treats an entity_id set here as the suggested
+        # object id (entity_platform: "An entity may suggest the entity_id by
+        # setting entity_id itself"), so the registry uses it when it first
+        # creates the entry and its own value — including a user's rename —
+        # wins on every later start. Keeps the ids the bundled card and
+        # existing picture-elements cards look up by prefix.
         self.entity_id = f"sensor.{key}_{slug}"
         self._attr_device_info = _device_info(entry)
 
@@ -1059,6 +1082,12 @@ class _SurfSensorBase(SensorEntity):
         slug = entry.data[CONF_SLUG]
         self._attr_unique_id = f"{entry.entry_id}_{key}"
         self._attr_translation_key = key
+        # Suggestion only: core treats an entity_id set here as the suggested
+        # object id (entity_platform: "An entity may suggest the entity_id by
+        # setting entity_id itself"), so the registry uses it when it first
+        # creates the entry and its own value — including a user's rename —
+        # wins on every later start. Keeps the ids the bundled card and
+        # existing picture-elements cards look up by prefix.
         self.entity_id = f"sensor.{key}_{slug}"
         self._attr_device_info = _device_info(entry)
 

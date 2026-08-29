@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.0] - 2026-08-29
+### Breaking
+- **The Lovelace card now lives in its own repository, [ha-beach-weather-card](https://github.com/LuckyTriple7/ha-beach-weather-card), and has to be installed separately** (HACS → Dashboard → *Beach Weather Card*). Up to 0.24.0 the card shipped inside this integration, which registered a Lovelace resource for it under `/beach_weather_static/`. Writing the user's shared `lovelace_resources` store from a config entry is not an integration's job — HACS does that as the package manager, visibly and with an uninstall path, which is where the card belongs. Existing dashboards keep working unchanged: same `custom:beach-weather-card` type, same config format, same entity IDs. Only a custom `background_image` pointing at a `/beach_weather_static/...` URL has to be repointed
+- The minimum Home Assistant version is now declared as **2024.12.0**. The previously declared 2024.1.0 was never accurate: `lovelace.const.LOVELACE_DATA` only exists from 2025.2, the `resource_mode` attribute read in 0.24.0 only from 2026.2, `StaticPathConfig` from 2024.7, and the implicit `OptionsFlow.config_entry` from 2024.12. Dropping the card removed the first two constraints, so the real floor is now the options-flow one
+
+### Added
+- A one-time cleanup on start removes the Lovelace resource earlier versions registered under `/beach_weather_static/`. Without it, updating would leave a resource pointing at a path nothing serves any more, which Lovelace retries on every dashboard render. Nothing else in the resource store is touched, and the integration never writes to it again
+
+### Changed
+- The download no longer carries the card and its seven photos, and the unused `brand/` directory is gone — about 1.9 MB less
+- Diagnostics also redact the location name and its slug, and redact the raw coordinator payload (which echoes the requested coordinates) rather than passing it through unfiltered
+
+### Fixed
+- README: HTTP 503 backs off for 30 seconds, not the 5 minutes documented — the value has been 30s since 0.22.1 but only the changelog said so
+
 ## [0.24.0] - 2026-08-18
 ### Fixed
 - **The card showed "Custom element doesn't exist" in Firefox** (and any other browser Home Assistant doesn't classify as "modern"), while working fine in Chrome. The card was published with `frontend.add_extra_js_url()`, which Home Assistant renders into the index page as `<script>if (isModern) { import("<url>"); }</script>` — `isModern` being a user-agent regex plus a feature check. Where that check rejects, the import never runs and the card silently never registers. It is now registered as a normal **Lovelace resource** (Settings → Dashboards → Resources) instead, the same mechanism every HACS-installed card uses, which Lovelace loads regardless of that check. YAML resource mode still falls back to the old behaviour, since resources can't be managed programmatically there

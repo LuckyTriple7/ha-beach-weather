@@ -9,7 +9,11 @@ from homeassistant.core import HomeAssistant
 from .const import DOMAIN
 from .coordinator import OpenMeteoCoordinatorBase
 
-TO_REDACT = {"latitude", "longitude"}
+# The beach name and its slug are user-chosen and often identify a home
+# beach as precisely as the coordinates do, so they are redacted with them.
+# The raw coordinator payload carries Open-Meteo's echo of the requested
+# coordinates, which is why it gets the same treatment below.
+TO_REDACT = {"latitude", "longitude", "name", "slug"}
 
 
 def _coordinator_diagnostics(coordinator: OpenMeteoCoordinatorBase | None) -> dict[str, Any] | None:
@@ -23,7 +27,7 @@ def _coordinator_diagnostics(coordinator: OpenMeteoCoordinatorBase | None) -> di
         "update_interval_seconds": (
             coordinator.update_interval.total_seconds() if coordinator.update_interval else None
         ),
-        "data": coordinator.data,
+        "data": async_redact_data(coordinator.data, TO_REDACT),
     }
 
 
