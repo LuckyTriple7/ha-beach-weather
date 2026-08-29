@@ -102,7 +102,19 @@ Die Karte hat ein eigenes Repository: **[Beach Weather Card](https://github.com/
 
 Installation über HACS → **Dashboard** → **Beach Weather Card**. HACS registriert die Lovelace-Ressource selbst; diese Integration schreibt nicht in deinen Ressourcen-Speicher.
 
-> **Umstieg von 0.24.0 oder älter:** Die Karte steckte bisher in dieser Integration, die dafür eine Lovelace-Ressource mit Ziel `/beach_weather_static/beach-weather-card.js` registriert hat. Version 1.0.0 entfernt diese Ressource beim nächsten Start und bedient den Pfad nicht mehr — die Karte also über HACS installieren, um sie weiter zu nutzen. Bestehende Dashboards müssen nicht angepasst werden: gleicher Kartentyp, gleiches Konfigurationsformat, gleiche Entity-IDs.
+### Umstieg von 0.24.0 oder älter
+
+Die Karte steckte bisher in dieser Integration, die dafür eine Lovelace-Ressource mit Ziel `/beach_weather_static/beach-weather-card.js` registriert hat. Version 1.0.0 entfernt diese Ressource beim nächsten Start und bedient den Pfad nicht mehr.
+
+**Erst die Karte installieren, dann die Integration aktualisieren** — so fehlt die Karte zu keinem Zeitpunkt:
+
+1. **Beach Weather Card** über HACS → **Dashboard** installieren. Solange sie noch nicht im HACS-Katalog ist: HACS → ⋮ → **Benutzerdefinierte Repositories** → URL `https://github.com/LuckyTriple7/ha-beach-weather-card`, Kategorie **Dashboard**
+2. Diese Integration aktualisieren und Home Assistant neu starten. Bei diesem Start wird die alte Ressource entfernt
+3. Browser neu laden (Strg+F5 / Cmd+Shift+R)
+
+Zwischen Schritt 1 und 2 existieren beide Ressourcen kurzzeitig — das ist harmlos, die Karte registriert ihr Custom Element nur einmal. Andersherum stehen deine Karten bis zur Installation auf „Custom element doesn't exist" — kaputt geht nichts, sie bleiben nur leer.
+
+Bestehende Dashboards müssen nicht angepasst werden: gleicher Kartentyp, gleiches Konfigurationsformat, gleiche Entity-IDs. Zu prüfen ist nur eine eigene `background_image`-URL, die auf `/beach_weather_static/...` zeigt — diesen Pfad gibt es nicht mehr.
 
 ## Schwellenwerte für Badebedingungen
 

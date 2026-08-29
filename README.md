@@ -102,7 +102,19 @@ The card has its own repository: **[Beach Weather Card](https://github.com/Lucky
 
 Install it from HACS → **Dashboard** → **Beach Weather Card**. HACS registers the Lovelace resource itself; this integration does not write to your resource store.
 
-> **Upgrading from 0.24.0 or earlier:** the card used to ship inside this integration, which registered a Lovelace resource pointing at `/beach_weather_static/beach-weather-card.js`. Version 1.0.0 removes that resource on the next start and stops serving that path, so install the card from HACS to keep using it. Existing dashboards need no changes — same card type, same config format, same entity IDs.
+### Upgrading from 0.24.0 or earlier
+
+The card used to ship inside this integration, which registered a Lovelace resource pointing at `/beach_weather_static/beach-weather-card.js`. Version 1.0.0 removes that resource on the next start and stops serving that path.
+
+**Install the card first, then update the integration** — that way the card is never missing:
+
+1. Install **Beach Weather Card** from HACS → **Dashboard**. While it is not in the HACS catalogue yet: HACS → ⋮ → **Custom repositories** → URL `https://github.com/LuckyTriple7/ha-beach-weather-card`, category **Dashboard**
+2. Update this integration and restart Home Assistant. The old resource is removed on that start
+3. Reload the browser (Ctrl+F5 / Cmd+Shift+R)
+
+Between steps 1 and 2 both resources exist briefly; that is harmless, the card only registers its custom element once. Doing it the other way round leaves your cards as "Custom element doesn't exist" until the card is installed — nothing breaks, but they render empty.
+
+Existing dashboards need no changes: same card type, same config format, same entity IDs. The one thing to check is a custom `background_image` pointing at a `/beach_weather_static/...` URL — that path is gone.
 
 ## Bathing condition thresholds
 
