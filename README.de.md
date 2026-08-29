@@ -96,6 +96,8 @@ Die 12 Marine-Sensoren (Wassertemperatur, Wellenhöhe/-richtung/-periode, Swell-
 
 Die Karte hat ein eigenes Repository: **[Beach Weather Card](https://github.com/LuckyTriple7/ha-beach-weather-card)** (`custom:beach-weather-card`) — die Sensorwerte eines Standorts frei über einem Strandfoto positioniert, per Drag & Drop im Karteneditor.
 
+![Beach Weather Card](images/beach-weather-card.webp)
+
 Installation über HACS → **Dashboard** → **Beach Weather Card**. HACS registriert die Lovelace-Ressource selbst; diese Integration schreibt nicht in deinen Ressourcen-Speicher.
 
 > **Umstieg von 0.24.0 oder älter:** Die Karte steckte bisher in dieser Integration, die dafür eine Lovelace-Ressource mit Ziel `/beach_weather_static/beach-weather-card.js` registriert hat. Version 1.0.0 entfernt diese Ressource beim nächsten Start und bedient den Pfad nicht mehr — die Karte also über HACS installieren, um sie weiter zu nutzen. Bestehende Dashboards müssen nicht angepasst werden: gleicher Kartentyp, gleiches Konfigurationsformat, gleiche Entity-IDs.
