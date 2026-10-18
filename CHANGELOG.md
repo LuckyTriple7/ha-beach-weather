@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.1.1] - 2026-10-18
+### Changed
+- The manifest now declares `"integration_type": "service"`. Without it Home Assistant treated Beach Weather as a hub, but each entry is a single location backed by a web service. Existing entries, devices and entities are unaffected (suggested in the HACS default review)
+
 ## [1.1.0] - 2026-08-29
 ### Changed
 - **Entity IDs are left to the entity registry.** Every entity used to assign its own `entity_id` in the constructor (`sensor.water_temperature_platja_de_muro`). Core treats that as a suggestion rather than ownership, but it sits oddly next to `_attr_has_entity_name = True`, which is the mechanism meant to derive the ID — so it is gone. Locations added from now on get the shape Home Assistant derives from the device and entity name: `sensor.platja_de_muro_water_temperature`, `button.platja_de_muro_update_now`, `weather.platja_de_muro` (unchanged)
