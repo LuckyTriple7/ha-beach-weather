@@ -65,8 +65,8 @@ async def _async_remove_legacy_card_resource(hass: HomeAssistant) -> None:
             continue
         _LOGGER.info(
             "Removing the Lovelace resource this integration registered before the card "
-            "moved to its own repository: %s. Install 'Beach Weather Card' from HACS to "
-            "keep using it",
+            "moved to its own repository: %s. Install 'Beach Weather Card' from the "
+            "Marketplace (HACS on Home Assistant 2026.10 and older) to keep using it",
             item["url"],
         )
         await resources.async_delete_item(item["id"])

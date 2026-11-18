@@ -1,6 +1,6 @@
 # Beach Weather
 
-[![HACS](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/hacs/integration)
+[![Marketplace](https://img.shields.io/badge/Marketplace%20%7C%20HACS-Custom-orange.svg)](https://www.hacs.xyz/docs/marketplace/)
 [![Version](https://img.shields.io/github/v/release/LuckyTriple7/ha-beach-weather)](https://github.com/LuckyTriple7/ha-beach-weather/releases)
 
 [![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-ffdd00?style=for-the-badge&logo=buy-me-a-coffee&logoColor=black)](https://buymeacoffee.com/luckytriple7)
@@ -14,13 +14,23 @@ Home-Assistant-Integration für Strand- und Wasserbedingungen (Wassertemperatur,
 - Beliebig viele Standorte, jeder als eigener Config-Entry — Koordinaten manuell eingeben oder auf der Karte auswählen
 - Wassertemperatur, Wellenhöhe/-periode, Windgeschwindigkeit/Böen/Richtung, dazu ein berechneter Sensor für die Badebedingungen
 - Eine normale `weather.<slug>`-Entity pro Standort mit stündlicher und täglicher Vorhersage, für die native Wetterkarte
-- Passende Lovelace-Karte, [Beach Weather Card](https://github.com/LuckyTriple7/ha-beach-weather-card) (`custom:beach-weather-card`) — Sensorwerte frei über einem Strandfoto positionieren; separat über HACS installiert
+- Passende Lovelace-Karte, [Beach Weather Card](https://github.com/LuckyTriple7/ha-beach-weather-card) (`custom:beach-weather-card`) — Sensorwerte frei über einem Strandfoto positionieren; separat über den Marketplace installiert (bis Home Assistant 2026.10 über HACS)
 - Alle Anfragen sämtlicher Standorte laufen über einen gemeinsamen Rate-Limiter — auch viele Standorte feuern nie parallel auf Open-Meteo (vermeidet HTTP 403)
 - Automatischer Fehler-Backoff bei 403/429
 - Konfiguration komplett über die HA-Oberfläche, kein YAML nötig
 - Einstellbares Abfrageintervall (Standard 900 s / 15 min, passend zum Aktualisierungsrhythmus von Open-Meteo)
 
-## Installation über HACS
+## Installation über den Marketplace
+
+**Home Assistant 2026.11 und neuer** – HACS ist dort als **Marketplace** eingebaut:
+
+1. **Einstellungen → Marketplace** öffnen
+2. Oben rechts **Add from link** wählen
+3. Unter **GitHub link** `LuckyTriple7/ha-beach-weather` eintragen → **Add**
+4. Auf der Repository-Seite **Install** wählen und bestätigen
+5. Home Assistant neu starten, falls der Marketplace danach fragt
+
+**Home Assistant 2026.10 und älter** – über HACS:
 
 1. HACS öffnen → **Integrationen** → Menü (⋮) → **Benutzerdefinierte Repositories**
 2. URL eintragen: `https://github.com/LuckyTriple7/ha-beach-weather`
@@ -38,7 +48,7 @@ Home-Assistant-Integration für Strand- und Wasserbedingungen (Wassertemperatur,
 
 Für jeden weiteren Standort die Integration erneut hinzufügen. Alle Vorschläge sind Näherungen (Nominatim für Ortssuche und Name, nächstgelegenes OSM-Küstensegment via Overpass für die Ausrichtung) — vor dem Speichern prüfen, besonders die Ausrichtung an Buchten oder komplizierten Küstenlinien.
 
-> Nach einem Update über HACS Home Assistant **neu starten** (kein bloßer Reload der Integration) — neue Übersetzungstexte werden nur bei einem vollen Neustart übernommen.
+> Nach einem Update über den Marketplace oder HACS Home Assistant **neu starten** (kein bloßer Reload der Integration) — neue Übersetzungstexte werden nur bei einem vollen Neustart übernommen.
 
 ## Entitäten
 
@@ -100,7 +110,7 @@ Die Karte hat ein eigenes Repository: **[Beach Weather Card](https://github.com/
 
 ![Beach Weather Card](images/beach-weather-card.webp)
 
-Installation über HACS → **Dashboard** → **Beach Weather Card**. HACS registriert die Lovelace-Ressource selbst; diese Integration schreibt nicht in deinen Ressourcen-Speicher.
+Installation wie bei der Integration – unter **Einstellungen → Marketplace** → **Add from link** → `LuckyTriple7/ha-beach-weather-card` (Home Assistant 2026.11 und neuer) bzw. über HACS → **Dashboard** → **Beach Weather Card** (2026.10 und älter). Marketplace bzw. HACS registrieren die Lovelace-Ressource selbst; diese Integration schreibt nicht in deinen Ressourcen-Speicher.
 
 ### Umstieg von 0.24.0 oder älter
 
@@ -108,7 +118,7 @@ Die Karte steckte bisher in dieser Integration, die dafür eine Lovelace-Ressour
 
 **Erst die Karte installieren, dann die Integration aktualisieren** — so fehlt die Karte zu keinem Zeitpunkt:
 
-1. **Beach Weather Card** über HACS → **Dashboard** installieren. Solange sie noch nicht im HACS-Katalog ist: HACS → ⋮ → **Benutzerdefinierte Repositories** → URL `https://github.com/LuckyTriple7/ha-beach-weather-card`, Kategorie **Dashboard**
+1. **Beach Weather Card** installieren: **Einstellungen → Marketplace** → **Add from link** → `LuckyTriple7/ha-beach-weather-card` (2026.11 und neuer) bzw. in HACS → ⋮ → **Benutzerdefinierte Repositories** → URL `https://github.com/LuckyTriple7/ha-beach-weather-card`, Kategorie **Dashboard** (2026.10 und älter)
 2. Diese Integration aktualisieren und Home Assistant neu starten. Bei diesem Start wird die alte Ressource entfernt
 3. Browser neu laden (Strg+F5 / Cmd+Shift+R)
 

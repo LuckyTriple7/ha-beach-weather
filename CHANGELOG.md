@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.1.2] - 2026-11-18
+### Changed
+- Since Home Assistant 2026.11, HACS is built in as the **Marketplace**. The installation instructions for the integration and the card now cover both ways (Settings → Marketplace on 2026.11 and newer, HACS on 2026.10 and older), and the log hint about the moved card points to the Marketplace
+
 ## [1.1.1] - 2026-10-18
 ### Changed
 - The manifest now declares `"integration_type": "service"`. Without it Home Assistant treated Beach Weather as a hub, but each entry is a single location backed by a web service. Existing entries, devices and entities are unaffected (suggested in the HACS default review)
